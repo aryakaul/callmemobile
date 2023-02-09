@@ -4,20 +4,30 @@ import argparse
 import subprocess
 import multiprocessing
 import os
+from loguru import logger
 import sys
 import pandas as pd
 from yaml import dump as yaml_dump
 
+
 def get_version():
     version = open(os.path.join(repo_path, "VERSION"), "r").readline().strip()
     return version
+
 
 def parse_arguments(version):
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--input",
         "-i",
-        help="[REQUIRED] Path to the input bed file denoting regions to query for putative mobility",
+        help="[REQUIRED] Path to the input fasta reference file.",
+        type=os.path.abspath,
+        required=True,
+    )
+    parser.add_argument(
+        "--bed",
+        "-b",
+        help="[REQUIRED] Path to the input bed file to query for putative mobility",
         type=os.path.abspath,
         required=True,
     )
@@ -47,14 +57,39 @@ def parse_arguments(version):
     )
     return parser.parse_args()
 
-def run_mobileelementfinder():
-    mefinder_output=os.path.join([output_path, 'mobileElementFinder_out'])
 
+def run_mobileelementfinder(input_fasta):
+    mefinder_output = os.path.join("/".join([output_path, "mobileElementFinder_out"]))
+    if not os.path.exists(mefinder_output):
+        logger.info("Created {mefinder_output} for output of mobileElementFinder")
+        os.makedirs(mefinder_output)
+    mefinder_output = os.path.join("/".join([mefinder_output, "out"]))
+    output = subprocess.run(
+        [
+            "mefinder",
+            "find",
+            "--contig",
+            f"{input_fasta}",
+            "--threads",
+            f"{threads}",
+            "--halsdfasdf",
+            f"{mefinder_output}",
+        ],
+        capture_output=True,
+    )
+    if output.returncode != 0:
+        logger.error("Error in mobileelementfinder!")
+        logger.error(output.stdout)
+        logger.error(output.stderr)
+        sys.exit(2)
+    else:
+        logger.debug(output.stdout)
+        logger.debug(output.stderr)
+        logger.success("Completed mobileelementfinder")
 
-    # "mefinder find --contig {input_fasta} --threads {threads} {output_name}"
 
 # def run_integronfinder():
-    # print("hi")
+# print("hi")
 
 
 def main():
@@ -62,6 +97,7 @@ def main():
     global pipeline
     global repo_path
     global output_path
+    global threads
     pipeline = "PUTABILE"
 
     # set paths
@@ -74,9 +110,9 @@ def main():
     threads = args.threads
 
     # run mobileelementfinder
-    # run_mobileelementfinder()
+    run_mobileelementfinder(args.input)
 
-    # run integron_finder 
+    # run integron_finder
     # run_integronfinder()
 
     # run plasmidfinder.py

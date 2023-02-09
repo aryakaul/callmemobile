@@ -1,0 +1,28 @@
+#date: 2022-12-09_14:36
+#sample: assembly_1
+#mge_finder version: 1.0.5
+#mgedb version: 1.0.3
+#blastn version: 2.10.1+
+mge_no,name,synonyms,prediction,type,allele_len,depth,e_value,identity,coverage,gaps,substitution,contig,start,end,cigar
+1,ISKpn1,,predicted,insertion sequence,1445,,0,0.997,1.0,0,5,"ENA|LR134213|LR134213.1 Klebsiella pneumoniae strain NCTC418 genome assembly, chromosome: 4",224649,226093,M1445
+2,ISKpn1,,predicted,insertion sequence,1445,,0,0.998,1.0,0,3,"ENA|LR134213|LR134213.1 Klebsiella pneumoniae strain NCTC418 genome assembly, chromosome: 4",163701,165145,M1445
+3,ISKpn1,,predicted,insertion sequence,1445,,0,0.998,1.0,0,3,"ENA|LR134213|LR134213.1 Klebsiella pneumoniae strain NCTC418 genome assembly, chromosome: 4",1648075,1649519,M1445
+4,ISKpn1,,predicted,insertion sequence,1445,,0,0.998,1.0,0,3,"ENA|LR134213|LR134213.1 Klebsiella pneumoniae strain NCTC418 genome assembly, chromosome: 4",3791273,3792717,M1445
+5,ISKpn1,,predicted,insertion sequence,1445,,0,0.999,1.0,0,2,"ENA|LR134213|LR134213.1 Klebsiella pneumoniae strain NCTC418 genome assembly, chromosome: 4",1992301,1993745,M1445
+6,ISKpn1,,predicted,insertion sequence,1445,,0,0.999,1.0,0,2,"ENA|LR134213|LR134213.1 Klebsiella pneumoniae strain NCTC418 genome assembly, chromosome: 4",2507631,2509075,M1445
+7,ISKpn1,,predicted,insertion sequence,1446,,0,0.999,0.999,1,1,"ENA|LR134213|LR134213.1 Klebsiella pneumoniae strain NCTC418 genome assembly, chromosome: 4",4867159,4868604,M897 D1 M548
+8,ISSen4,ISEc34;IS1222SC,predicted,insertion sequence,1221,,0,0.965,0.998,2,41,"ENA|LR134213|LR134213.1 Klebsiella pneumoniae strain NCTC418 genome assembly, chromosome: 4",1820207,1821427,M13 I1 M2 D1 M1205
+9,ISKpn28,,predicted,insertion sequence,1096,,0,1.0,1.0,0,0,"ENA|LR134213|LR134213.1 Klebsiella pneumoniae strain NCTC418 genome assembly, chromosome: 4",446683,447778,M1096
+10,ISKpn28,,predicted,insertion sequence,1096,,0,1.0,1.0,0,0,"ENA|LR134213|LR134213.1 Klebsiella pneumoniae strain NCTC418 genome assembly, chromosome: 4",4684580,4685675,M1096
+11,ISKpn28,,predicted,insertion sequence,1096,,0,1.0,1.0,0,0,"ENA|LR134213|LR134213.1 Klebsiella pneumoniae strain NCTC418 genome assembly, chromosome: 4",2757176,2758271,M1096
+12,ISKpn28,,predicted,insertion sequence,1096,,0,1.0,1.0,0,0,"ENA|LR134213|LR134213.1 Klebsiella pneumoniae strain NCTC418 genome assembly, chromosome: 4",4550140,4551235,M1096
+13,ISKpn28,,predicted,insertion sequence,1096,,0,1.0,1.0,0,0,"ENA|LR134213|LR134213.1 Klebsiella pneumoniae strain NCTC418 genome assembly, chromosome: 4",202276,203371,M1096
+14,ISEam1,ISEch10,predicted,insertion sequence,1230,,0,0.901,1.0,0,122,"ENA|LR134213|LR134213.1 Klebsiella pneumoniae strain NCTC418 genome assembly, chromosome: 4",4662363,4663592,M1230
+15,IS102,,predicted,insertion sequence,1056,,0,0.945,0.997,3,55,"ENA|LR134213|LR134213.1 Klebsiella pneumoniae strain NCTC418 genome assembly, chromosome: 4",2246935,2247990,M26 D1 M5 I2 M1024
+16,ISEch12,,predicted,insertion sequence,1197,,0,0.894,0.988,11,117,"ENA|LR134213|LR134213.1 Klebsiella pneumoniae strain NCTC418 genome assembly, chromosome: 4",4655998,4657194,M691 I1 M1 I2 M4 I1 M3 I1 M1 I2 M2 I1 M1 I1 M2 I2 M492
+17,ISEc36,,predicted,insertion sequence,1317,,0,0.786,0.992,8,275,"ENA|LR134213|LR134213.1 Klebsiella pneumoniae strain NCTC418 genome assembly, chromosome: 4",1826406,1827722,M249 I1 M2 D1 M675 D1 M2 I1 M308 D1 M8 I1 M8 I1 M27 I1 M35
+18,MITEYpe1,,predicted,mite,123,,0.0,0.813,1.0,0,23,"ENA|LR134213|LR134213.1 Klebsiella pneumoniae strain NCTC418 genome assembly, chromosome: 4",5303475,5303597,M123
+19,MITEEc1,,predicted,mite,122,,0.0,0.855,0.976,3,15,"ENA|LR134213|LR134213.1 Klebsiella pneumoniae strain NCTC418 genome assembly, chromosome: 4",4147539,4147660,M28 D1 M4 I1 M12 I1 M77
+20,MITEYpe1,,predicted,mite,123,,0.0,0.839,0.984,2,18,"ENA|LR134213|LR134213.1 Klebsiella pneumoniae strain NCTC418 genome assembly, chromosome: 4",1150265,1150387,M35 I1 M2 D1 M85
+21,MITEYpe1,,predicted,mite,117,,0.0,0.783,0.919,5,21,"ENA|LR134213|LR134213.1 Klebsiella pneumoniae strain NCTC418 genome assembly, chromosome: 4",5082124,5082240,M31 I1 M3 D1 M34 I1 M3 I1 M5 D1 M39
+22,MITEPlu5,,predicted,mite,111,,0.0,0.775,0.902,0,25,"ENA|LR134213|LR134213.1 Klebsiella pneumoniae strain NCTC418 genome assembly, chromosome: 4",4414499,4414609,M111
