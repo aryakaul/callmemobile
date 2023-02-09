@@ -92,7 +92,6 @@ def run_integronfinder(input_fasta):
     if not os.path.exists(integronfinder_output):
         os.makedirs(integronfinder_output)
         logger.info(f"Created {integronfinder_output} for output of Integron-Finder")
-    # mefinder_output = os.path.join("/".join([mefinder_output, "out"]))
     output = subprocess.run(
         [
             "integron_finder",
@@ -116,6 +115,31 @@ def run_integronfinder(input_fasta):
         logger.debug(output.stderr)
         logger.success("Completed IntegronFinder")
 
+def run_plasmidfinder(input_fasta):
+    plasmidfinder_output = os.path.join("/".join([output_path, "plasmidfinder_out"]))
+    if not os.path.exists(plasmidfinder_output):
+        os.makedirs(plasmidfinder_output)
+        logger.info(f"Created {plasmidfinder_output} for output of plasmidfinder")
+    output = subprocess.run(
+        [
+            "plasmidfinder.py",
+            "-i",
+            f"{input_fasta}",
+            "-o",
+            f"{plasmidfinder_output}",
+            "-x",
+        ],
+        capture_output=True,
+    )
+    if output.returncode != 0:
+        logger.error("Error in plasmidfinder!")
+        logger.error(output.stdout)
+        logger.error(output.stderr)
+        sys.exit(2)
+    else:
+        logger.debug(output.stdout)
+        logger.debug(output.stderr)
+        logger.success("Completed plasmidfinder")
 
 def main():
     # set global vars
@@ -141,7 +165,7 @@ def main():
     run_integronfinder(args.input)
 
     # run plasmidfinder.py
-    # run_plasmidfinder()
+    run_plasmidfinder(args.input)
 
 
 if __name__ == "__main__":
