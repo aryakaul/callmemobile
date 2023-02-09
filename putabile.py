@@ -72,7 +72,6 @@ def run_mobileelementfinder(input_fasta):
             f"{input_fasta}",
             "--threads",
             f"{threads}",
-            "--halsdfasdf",
             f"{mefinder_output}",
         ],
         capture_output=True,
@@ -88,7 +87,33 @@ def run_mobileelementfinder(input_fasta):
         logger.success("Completed mobileelementfinder")
 
 
-# def run_integronfinder():
+def run_integronfinder():
+    integronfinder_output = os.path.join("/".join([output_path, "integronfinder_out"]))
+    if not os.path.exists(integronfinder_output):
+        logger.info("Created {integronfinder_output} for output of Integron-Finder")
+        os.makedirs(integronfinder_output)
+    # mefinder_output = os.path.join("/".join([mefinder_output, "out"]))
+    output = subprocess.run(
+        [
+            "integron_finder",
+            "--local-max",
+            "--cpu",
+            f"{threads}",
+            "--circ",
+            "--output",
+            f"{integronfidner_output}",
+        ],
+        capture_output=True,
+    )
+    if output.returncode != 0:
+        logger.error("Error in IntegronFinder!")
+        logger.error(output.stdout)
+        logger.error(output.stderr)
+        sys.exit(2)
+    else:
+        logger.debug(output.stdout)
+        logger.debug(output.stderr)
+        logger.success("Completed IntegronFinder")
 # print("hi")
 
 
