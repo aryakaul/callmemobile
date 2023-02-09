@@ -61,8 +61,8 @@ def parse_arguments(version):
 def run_mobileelementfinder(input_fasta):
     mefinder_output = os.path.join("/".join([output_path, "mobileElementFinder_out"]))
     if not os.path.exists(mefinder_output):
-        logger.info("Created {mefinder_output} for output of mobileElementFinder")
         os.makedirs(mefinder_output)
+        logger.info(f"Created {mefinder_output} for output of mobileElementFinder")
     mefinder_output = os.path.join("/".join([mefinder_output, "out"]))
     output = subprocess.run(
         [
@@ -72,7 +72,6 @@ def run_mobileelementfinder(input_fasta):
             f"{input_fasta}",
             "--threads",
             f"{threads}",
-            "--halsdfasdf",
             f"{mefinder_output}",
         ],
         capture_output=True,
@@ -88,8 +87,34 @@ def run_mobileelementfinder(input_fasta):
         logger.success("Completed mobileelementfinder")
 
 
-# def run_integronfinder():
-# print("hi")
+def run_integronfinder(input_fasta):
+    integronfinder_output = os.path.join("/".join([output_path, "integronfinder_out"]))
+    if not os.path.exists(integronfinder_output):
+        os.makedirs(integronfinder_output)
+        logger.info(f"Created {integronfinder_output} for output of Integron-Finder")
+    # mefinder_output = os.path.join("/".join([mefinder_output, "out"]))
+    output = subprocess.run(
+        [
+            "integron_finder",
+            "--local-max",
+            "--cpu",
+            f"{threads}",
+            "--circ",
+            "--outdir",
+            f"{integronfinder_output}",
+            f"{input_fasta}"
+        ],
+        capture_output=True,
+    )
+    if output.returncode != 0:
+        logger.error("Error in IntegronFinder!")
+        logger.error(output.stdout)
+        logger.error(output.stderr)
+        sys.exit(2)
+    else:
+        logger.debug(output.stdout)
+        logger.debug(output.stderr)
+        logger.success("Completed IntegronFinder")
 
 
 def main():
@@ -113,7 +138,7 @@ def main():
     run_mobileelementfinder(args.input)
 
     # run integron_finder
-    # run_integronfinder()
+    run_integronfinder(args.input)
 
     # run plasmidfinder.py
     # run_plasmidfinder()
