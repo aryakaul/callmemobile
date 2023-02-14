@@ -4,13 +4,16 @@ import argparse
 import subprocess
 import multiprocessing
 import os
+import glob
 from loguru import logger
 import sys
 import pandas as pd
 
+
 def get_version():
     version = open(os.path.join(repo_path, "VERSION"), "r").readline().strip()
     return version
+
 
 def parse_arguments(version):
     parser = argparse.ArgumentParser()
@@ -112,7 +115,10 @@ def run_integronfinder(input_fasta):
         logger.debug(output.stdout.decode())
         logger.debug(output.stderr.decode())
         logger.success("Completed IntegronFinder")
+    return glob.glob(os.path.join("/".join([output_path, "integronfinder_out", "*.integrons"])))[0]
 
+def bedoutput_integronfinder(ifinder_out):
+    return ""
 
 def run_plasmidfinder(input_fasta):
     plasmidfinder_output = os.path.join("/".join([output_path, "plasmidfinder_out"]))
@@ -147,9 +153,9 @@ def bedformat_mobileelementfinder(mge_outputcsv):
     output = subprocess.run(
         [
             f"grep -v '^#' {mge_outputcsv} \
-            | csvtk cut -f contig,start,end,name -T \
+            | csvtk cut -f contig,start,end,name,type -T \
             | sed 1d \
-            | awk -F '\\t' '{{gsub(/ /,\"\",$1); print $0}}' \
+            | awk -F'\\t' '{{split($1, a, \" \"); printf \"%s\t\", a[1]; for(i=2;i<=NF;++i) if(i!=NF){{printf \"%s\\t\", $i}}else{{printf \"%s\\n\", $i}}}}' \
             | sort-bed -",
         ],
         capture_output=True,
@@ -167,28 +173,28 @@ def bedformat_mobileelementfinder(mge_outputcsv):
         logger.success("Completed reformatting mge output")
         return mge_outputbed
 
+
 def classify_mobileelementfinder(inputbed, bedmge):
-    maxdist=20000
+    maxdist = 20000
 
     bed = os.path.dirname(bedmge)
     output_bed = os.path.join("/".join([bed, "input-mge_out-intersect.sorted.bed"]))
     # output = subprocess.run(
-        # [
-            # f"bedops --element-of 1 {inputbed} {bedmge}"
-        # ],
-        # capture_output=True,
-        # shell=True,
+    # [
+    # f"bedops --element-of 1 {inputbed} {bedmge}"
+    # ],
+    # capture_output=True,
+    # shell=True,
     # )
     # if output.returncode != 0:
-        # logger.error("Error in classifying mge's results! bedops --element-of")
-        # logger.error(output.stdout.decode())
-        # logger.error(output.stderr.decode())
-        # sys.exit(2)
+    # logger.error("Error in classifying mge's results! bedops --element-of")
+    # logger.error(output.stdout.decode())
+    # logger.error(output.stderr.decode())
+    # sys.exit(2)
     # else:
-        # with open(f"{output_bed}", "w") as f:
-            # f.write(str(output.stdout.decode()))
-        # logger.debug(output.stderr.decode())
-
+    # with open(f"{output_bed}", "w") as f:
+    # f.write(str(output.stdout.decode()))
+    # logger.debug(output.stderr.decode())
 
     output = subprocess.run(
         [
@@ -211,20 +217,19 @@ def classify_mobileelementfinder(inputbed, bedmge):
     return output_bed
 
 
-
 def run_classify_mobileelementfinder(input_fasta, input_bed):
     mgeout = run_mobileelementfinder(input_fasta)
     bedmgeout = bedformat_mobileelementfinder(mgeout)
     classify_mobileelementfinder(input_bed, bedmgeout)
 
-
-def classify_regions_integronfinder():
-    return "null"
+def run_classify_integronfinder(input_fasta, input_bed):
+    ifinderout = run_integronfinder(input_fasta)
+    bedifinder = bedformat_integronfinder(ifinderout)
+    classify_integronfinder(input_bed, bedifinder)
 
 
 def classify_regions_plasmidfinder():
     return "null"
-
 
 def run_tools(input_fasta, input_bed):
 
@@ -232,7 +237,7 @@ def run_tools(input_fasta, input_bed):
     run_classify_mobileelementfinder(input_fasta, input_bed)
 
     # run integron_finder
-    run_integronfinder(input_fasta)
+    run_classify_integronfinder(input_fasta, input_bed)
 
     # run plasmidfinder.py
     run_plasmidfinder(input_fasta)
