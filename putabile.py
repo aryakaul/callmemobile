@@ -7,13 +7,10 @@ import os
 from loguru import logger
 import sys
 import pandas as pd
-from yaml import dump as yaml_dump
-
 
 def get_version():
     version = open(os.path.join(repo_path, "VERSION"), "r").readline().strip()
     return version
-
 
 def parse_arguments(version):
     parser = argparse.ArgumentParser()
@@ -78,13 +75,14 @@ def run_mobileelementfinder(input_fasta):
     )
     if output.returncode != 0:
         logger.error("Error in mobileelementfinder!")
-        logger.error(output.stdout)
-        logger.error(output.stderr)
+        logger.error(output.stdout.decode())
+        logger.error(output.stderr.decode())
         sys.exit(2)
     else:
-        logger.debug(output.stdout)
-        logger.debug(output.stderr)
+        logger.debug(output.stdout.decode())
+        logger.debug(output.stderr.decode())
         logger.success("Completed mobileelementfinder")
+    return "".join([mefinder_output, ".csv"])
 
 
 def run_integronfinder(input_fasta):
@@ -101,19 +99,20 @@ def run_integronfinder(input_fasta):
             "--circ",
             "--outdir",
             f"{integronfinder_output}",
-            f"{input_fasta}"
+            f"{input_fasta}",
         ],
         capture_output=True,
     )
     if output.returncode != 0:
         logger.error("Error in IntegronFinder!")
-        logger.error(output.stdout)
-        logger.error(output.stderr)
+        logger.error(output.stdout.decode())
+        logger.error(output.stderr.decode())
         sys.exit(2)
     else:
-        logger.debug(output.stdout)
-        logger.debug(output.stderr)
+        logger.debug(output.stdout.decode())
+        logger.debug(output.stderr.decode())
         logger.success("Completed IntegronFinder")
+
 
 def run_plasmidfinder(input_fasta):
     plasmidfinder_output = os.path.join("/".join([output_path, "plasmidfinder_out"]))
@@ -133,13 +132,111 @@ def run_plasmidfinder(input_fasta):
     )
     if output.returncode != 0:
         logger.error("Error in plasmidfinder!")
-        logger.error(output.stdout)
-        logger.error(output.stderr)
+        logger.error(output.stdout.decode())
+        logger.error(output.stderr.decode())
         sys.exit(2)
     else:
-        logger.debug(output.stdout)
-        logger.debug(output.stderr)
+        logger.debug(output.stdout.decode())
+        logger.debug(output.stderr.decode())
         logger.success("Completed plasmidfinder")
+
+
+def bedformat_mobileelementfinder(mge_outputcsv):
+    mge_outputbed = os.path.dirname(mge_outputcsv)
+    mge_outputbed = os.path.join("/".join([mge_outputbed, "mge_out.sorted.bed"]))
+    output = subprocess.run(
+        [
+            f"grep -v '^#' {mge_outputcsv} \
+            | csvtk cut -f contig,start,end,name -T \
+            | sed 1d \
+            | awk -F '\\t' '{{gsub(/ /,\"\",$1); print $0}}' \
+            | sort-bed -",
+        ],
+        capture_output=True,
+        shell=True,
+    )
+    if output.returncode != 0:
+        logger.error("Error in formatting mge output as bedfile!")
+        logger.error(output.stdout.decode())
+        logger.error(output.stderr.decode())
+        sys.exit(2)
+    else:
+        with open(f"{mge_outputbed}", "w") as f:
+            f.write(str(output.stdout.decode()))
+        logger.debug(output.stderr.decode())
+        logger.success("Completed reformatting mge output")
+        return mge_outputbed
+
+def classify_mobileelementfinder(inputbed, bedmge):
+    maxdist=20000
+
+    bed = os.path.dirname(bedmge)
+    output_bed = os.path.join("/".join([bed, "input-mge_out-intersect.sorted.bed"]))
+    # output = subprocess.run(
+        # [
+            # f"bedops --element-of 1 {inputbed} {bedmge}"
+        # ],
+        # capture_output=True,
+        # shell=True,
+    # )
+    # if output.returncode != 0:
+        # logger.error("Error in classifying mge's results! bedops --element-of")
+        # logger.error(output.stdout.decode())
+        # logger.error(output.stderr.decode())
+        # sys.exit(2)
+    # else:
+        # with open(f"{output_bed}", "w") as f:
+            # f.write(str(output.stdout.decode()))
+        # logger.debug(output.stderr.decode())
+
+
+    output = subprocess.run(
+        [
+            f"closest-features --dist --closest {inputbed} {bedmge} \
+            | awk -F'\\t' '{{split($7, a, \"|\"); if(a[2] < {maxdist}) {{print $0}}}}'"
+        ],
+        capture_output=True,
+        shell=True,
+    )
+    if output.returncode != 0:
+        logger.error("Error in classifying mge's results! closest-features")
+        logger.error(output.stdout.decode())
+        logger.error(output.stderr.decode())
+        sys.exit(2)
+    else:
+        with open(f"{output_bed}", "w") as f:
+            f.write(str(output.stdout.decode()))
+        logger.debug(output.stderr.decode())
+    logger.success("Completed classifying mge output")
+    return output_bed
+
+
+
+def run_classify_mobileelementfinder(input_fasta, input_bed):
+    mgeout = run_mobileelementfinder(input_fasta)
+    bedmgeout = bedformat_mobileelementfinder(mgeout)
+    classify_mobileelementfinder(input_bed, bedmgeout)
+
+
+def classify_regions_integronfinder():
+    return "null"
+
+
+def classify_regions_plasmidfinder():
+    return "null"
+
+
+def run_tools(input_fasta, input_bed):
+
+    # run mobileelementfinder
+    run_classify_mobileelementfinder(input_fasta, input_bed)
+
+    # run integron_finder
+    run_integronfinder(input_fasta)
+
+    # run plasmidfinder.py
+    run_plasmidfinder(input_fasta)
+
 
 def main():
     # set global vars
@@ -158,14 +255,8 @@ def main():
     output_path = args.output
     threads = args.threads
 
-    # run mobileelementfinder
-    run_mobileelementfinder(args.input)
-
-    # run integron_finder
-    run_integronfinder(args.input)
-
-    # run plasmidfinder.py
-    run_plasmidfinder(args.input)
+    # run all tools
+    run_tools(args.input, args.bed)
 
 
 if __name__ == "__main__":
