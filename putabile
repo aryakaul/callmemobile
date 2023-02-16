@@ -83,7 +83,7 @@ def run_mobileelementfinder(input_fasta):
         sys.exit(2)
     else:
         logger.debug(output.stdout.decode())
-        logger.debug(output.stderr.decode())
+        # logger.debug(output.stderr.decode())
         logger.success("Completed mobileelementfinder")
     return "".join([mefinder_output, ".csv"])
 
@@ -93,6 +93,8 @@ def run_integronfinder(input_fasta):
     if not os.path.exists(integronfinder_output):
         os.makedirs(integronfinder_output)
         logger.info(f"Created {integronfinder_output} for output of Integron-Finder")
+    input_fasta_basename = os.path.basename(input_fasta)
+    input_fasta_basename = os.path.splitext(input_fasta_basename)[0]
     output = subprocess.run(
         [
             "integron_finder",
@@ -113,12 +115,38 @@ def run_integronfinder(input_fasta):
         sys.exit(2)
     else:
         logger.debug(output.stdout.decode())
-        logger.debug(output.stderr.decode())
+        # logger.debug(output.stderr.decode())
         logger.success("Completed IntegronFinder")
-    return glob.glob(os.path.join("/".join([output_path, "integronfinder_out", "*.integrons"])))[0]
+    integronfinder_output_integrons = os.path.join("/".join([integronfinder_output, "Results_Integron_Finder_"+input_fasta_basename, input_fasta_basename+".integrons"]))
+    if os.path.exists(integronfinder_output_integrons):
+        return integronfinder_output_integrons
+    else:
+        return ""
 
-def bedoutput_integronfinder(ifinder_out):
-    return ""
+def bedformat_integronfinder(ifinder_out):
+    ifinder_outputbed = os.path.dirname(ifinder_out)
+    ifinder_outputbed = os.path.join("/".join([ifinder_outputbed, "integronfinder_out.sorted.bed"]))
+    output = subprocess.run(
+        [
+            f"grep -v '^#' {ifinder_out} \
+            | sed 1d \
+            | cut -f2,4,5 \
+            | sort-bed -",
+        ],
+        capture_output=True,
+        shell=True,
+    )
+    if output.returncode != 0:
+        logger.error("Error in formatting Integron Finder output as bedfile!")
+        logger.error(output.stdout.decode())
+        logger.error(output.stderr.decode())
+        sys.exit(2)
+    else:
+        with open(f"{ifinder_outputbed}", "w") as f:
+            f.write(str(output.stdout.decode()))
+        # logger.debug(output.stderr.decode())
+        logger.success("Completed reformatting Integron Finder output")
+        return ifinder_outputbed
 
 def run_plasmidfinder(input_fasta):
     plasmidfinder_output = os.path.join("/".join([output_path, "plasmidfinder_out"]))
@@ -143,9 +171,9 @@ def run_plasmidfinder(input_fasta):
         sys.exit(2)
     else:
         logger.debug(output.stdout.decode())
-        logger.debug(output.stderr.decode())
+        # logger.debug(output.stderr.decode())
         logger.success("Completed plasmidfinder")
-
+    return os.path.join("/".join([plasmidfinder_output, "results_tab.tsv"]))
 
 def bedformat_mobileelementfinder(mge_outputcsv):
     mge_outputbed = os.path.dirname(mge_outputcsv)
@@ -169,33 +197,40 @@ def bedformat_mobileelementfinder(mge_outputcsv):
     else:
         with open(f"{mge_outputbed}", "w") as f:
             f.write(str(output.stdout.decode()))
-        logger.debug(output.stderr.decode())
+        # logger.debug(output.stderr.decode())
         logger.success("Completed reformatting mge output")
         return mge_outputbed
 
+def bedformat_plasmidfinder(pfinderout):
+    pfinder_outputbed = os.path.dirname(pfinderout)
+    pfinder_outputbed = os.path.join("/".join([pfinder_outputbed, "plasmidfinder_out.sorted.bed"]))
+    output = subprocess.run(
+        [
+            f"csvtk cut -t -f Contig,'Position in contig',Plasmid,Note {pfinderout} \
+            | sed 1d \
+            | awk -F'\\t' '{{split($1, a, \" \"); printf \"%s\t\", a[1]; split($2,b,\".\"); printf \"%s\t%s\t\", b[1], b[3]; for(i=3;i<=NF;++i) if(i!=NF){{printf \"%s\\t\", $i}}else{{printf \"%s\\n\", $i}}}}' \
+            | sort-bed -",
+        ],
+        capture_output=True,
+        shell=True,
+    )
+    if output.returncode != 0:
+        logger.error("Error in formatting plasmidfinder output as bedfile!")
+        logger.error(output.stdout.decode())
+        logger.error(output.stderr.decode())
+        sys.exit(2)
+    else:
+        with open(f"{pfinder_outputbed}", "w") as f:
+            f.write(str(output.stdout.decode()))
+        # logger.debug(output.stderr.decode())
+        logger.success("Completed reformatting mge output")
+        return pfinder_outputbed
 
 def classify_mobileelementfinder(inputbed, bedmge):
     maxdist = 20000
 
     bed = os.path.dirname(bedmge)
     output_bed = os.path.join("/".join([bed, "input-mge_out-intersect.sorted.bed"]))
-    # output = subprocess.run(
-    # [
-    # f"bedops --element-of 1 {inputbed} {bedmge}"
-    # ],
-    # capture_output=True,
-    # shell=True,
-    # )
-    # if output.returncode != 0:
-    # logger.error("Error in classifying mge's results! bedops --element-of")
-    # logger.error(output.stdout.decode())
-    # logger.error(output.stderr.decode())
-    # sys.exit(2)
-    # else:
-    # with open(f"{output_bed}", "w") as f:
-    # f.write(str(output.stdout.decode()))
-    # logger.debug(output.stderr.decode())
-
     output = subprocess.run(
         [
             f"closest-features --dist --closest {inputbed} {bedmge} \
@@ -216,17 +251,66 @@ def classify_mobileelementfinder(inputbed, bedmge):
     logger.success("Completed classifying mge output")
     return output_bed
 
+def classify_integronfinder(input_bed, bedifinder):
+    bed = os.path.dirname(bedifinder)
+    output_bed = os.path.join("/".join([bed, "input-ifinder_out-intersect.sorted.bed"]))
+    output = subprocess.run(
+        [
+            f"bedops -e 90% {input_bed} {bedifinder}"
+        ],
+        capture_output=True,
+        shell=True,
+    )
+    if output.returncode != 0:
+        logger.error("Error in classifying Integron Finder's results! bedops -e")
+        logger.error(output.stdout.decode())
+        logger.error(output.stderr.decode())
+        sys.exit(2)
+    else:
+        with open(f"{output_bed}", "w") as f:
+            f.write(str(output.stdout.decode()))
+        logger.debug(output.stderr.decode())
+    logger.success("Completed classifying Integron Finder output")
+    return output_bed
+
+def classify_plasmidfinder(input_bed, bedpfinder):
+    bed = os.path.dirname(bedpfinder)
+    output_bed = os.path.join("/".join([bed, "input-pfinder_out-intersect.sorted.bed"]))
+    output = subprocess.run(
+        [
+        ],
+        capture_output=True,
+        shell=True,
+    )
+    if output.returncode != 0:
+        logger.error("Error in classifying plasmidfinder's results!")
+        logger.error(output.stdout.decode())
+        logger.error(output.stderr.decode())
+        sys.exit(2)
+    else:
+        with open(f"{output_bed}", "w") as f:
+            f.write(str(output.stdout.decode()))
+        # logger.debug(output.stderr.decode())
+    logger.success("Completed classifying PlasmidFinder output")
+    return output_bed
 
 def run_classify_mobileelementfinder(input_fasta, input_bed):
     mgeout = run_mobileelementfinder(input_fasta)
     bedmgeout = bedformat_mobileelementfinder(mgeout)
     classify_mobileelementfinder(input_bed, bedmgeout)
 
+def run_classify_plasmidfinder(input_fasta, input_bed):
+    pfinderout = run_plasmidfinder(input_fasta)
+    bedpfinderout = bedformat_plasmidfinder(pfinderout)
+    # classify_mobileelementfinder(input_bed, bedmgeout)
+
 def run_classify_integronfinder(input_fasta, input_bed):
     ifinderout = run_integronfinder(input_fasta)
-    bedifinder = bedformat_integronfinder(ifinderout)
-    classify_integronfinder(input_bed, bedifinder)
-
+    if not ifinderout:
+        logger.info("No integrons found. Moving on.")
+    else:
+        bedifinder = bedformat_integronfinder(ifinderout)
+        classify_integronfinder(input_bed, bedifinder)
 
 def classify_regions_plasmidfinder():
     return "null"
@@ -240,8 +324,7 @@ def run_tools(input_fasta, input_bed):
     run_classify_integronfinder(input_fasta, input_bed)
 
     # run plasmidfinder.py
-    run_plasmidfinder(input_fasta)
-
+    run_classify_plasmidfinder(input_fasta, input_bed)
 
 def main():
     # set global vars
