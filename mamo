@@ -144,6 +144,38 @@ def run_integronfinder(input_fasta):
     else:
         return ""
 
+def run_mobrecon(ifasta):
+    mobrecon_output = os.path.join(
+        "/".join([output_path, "mobrecon_out"])
+    )
+    if not os.path.exists(mobrecon_output):
+        os.makedirs(mobrecon_output)
+        logger.info(
+            f"Created {mobrecon_output} for output of mob_recon"
+        )
+    output = subprocess.run(
+        [
+            "mob_recon",
+            "--infile",
+            "{ifasta}",
+            "--threads",
+            f"{threads}",
+            "--outdir",
+            f"{mobrecon_output}",
+            "--force",
+        ],
+        capture_output=True,
+    )
+    if output.returncode != 0:
+        logger.error("Error in mob_recon!")
+        logger.error(output.stdout.decode())
+        logger.error(output.stderr.decode())
+        sys.exit(2)
+    else:
+        logger.debug(output.stdout.decode())
+        # logger.debug(output.stderr.decode())
+        logger.success("Completed mob_recon")
+    return os.path.join("/".join([mobrecon_output, "contig_report.txt"]))
 
 def bedformat_integronfinder(ifinder_out):
     ifinder_outputbed = os.path.dirname(ifinder_out)
@@ -388,6 +420,12 @@ def run_classify_plasmidfinder(input_fasta, input_bed):
     classify_plasmidfinder(input_fasta, input_bed, bedpfinderout)
 
 
+def run_classify_mobrecon(input_fasta, input_bed):
+    mobreconout = run_mobrecon(input_fasta)
+    # bedpfinderout = bedformat_plasmidfinder(pfinderout)
+    # classify_plasmidfinder(input_fasta, input_bed, bedpfinderout)
+
+
 def run_classify_integronfinder(input_fasta, input_bed):
     ifinderout = run_integronfinder(input_fasta)
     if not ifinderout:
@@ -399,13 +437,16 @@ def run_classify_integronfinder(input_fasta, input_bed):
 
 def run_tools(input_fasta, input_bed):
     # run mobileelementfinder
-    # run_classify_mobileelementfinder(input_fasta, input_bed)
+    run_classify_mobileelementfinder(input_fasta, input_bed)
 
     # run integron_finder
-    # run_classify_integronfinder(input_fasta, input_bed)
+    run_classify_integronfinder(input_fasta, input_bed)
 
     # run plasmidfinder.py
     run_classify_plasmidfinder(input_fasta, input_bed)
+
+    # run mobrecon
+    # run_classify_mobrecon(input_fasta, input_bed)
 
 
 def main():
