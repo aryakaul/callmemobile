@@ -1,2 +1,2 @@
-# putabile
-id putatively mobile genomic regions
+# mamo
+id maybe mobile genomic regions
