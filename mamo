@@ -57,7 +57,7 @@ def parse_arguments(version):
         "-V",
         help="Print program version",
         action="version",
-        version=f"putabile {version}",
+        version=f"mamo {version}",
         # version="hi",
     )
     return parser.parse_args()
@@ -157,8 +157,8 @@ def run_mobrecon(ifasta):
         [
             "mob_recon",
             "--infile",
-            "{ifasta}",
-            "--threads",
+            f"{ifasta}",
+            "--num_threads",
             f"{threads}",
             "--outdir",
             f"{mobrecon_output}",
@@ -436,18 +436,20 @@ def run_classify_integronfinder(input_fasta, input_bed):
 
 
 def run_tools(input_fasta, input_bed):
+    logger.info(f"Input fasta: {input_fasta}")
+    logger.info(f"Input bed: {input_bed}")
+
     # run mobileelementfinder
     run_classify_mobileelementfinder(input_fasta, input_bed)
 
     # run integron_finder
-    run_classify_integronfinder(input_fasta, input_bed)
+    # run_classify_integronfinder(input_fasta, input_bed)
 
     # run plasmidfinder.py
     run_classify_plasmidfinder(input_fasta, input_bed)
 
     # run mobrecon
-    # run_classify_mobrecon(input_fasta, input_bed)
-
+    run_classify_mobrecon(input_fasta, input_bed)
 
 def main():
     # set global vars
@@ -455,7 +457,7 @@ def main():
     global repo_path
     global output_path
     global threads
-    pipeline = "PUTABILE"
+    pipeline = "MAMO"
 
     # set paths
     repo_path = os.path.dirname(os.path.realpath(__file__))
