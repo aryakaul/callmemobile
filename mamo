@@ -57,7 +57,7 @@ def parse_arguments(version):
         "-V",
         help="Print program version",
         action="version",
-        version=f"putabile {version}",
+        version=f"mamo {version}",
         # version="hi",
     )
     return parser.parse_args()
@@ -157,8 +157,8 @@ def run_mobrecon(ifasta):
         [
             "mob_recon",
             "--infile",
-            "{ifasta}",
-            "--threads",
+            f"{ifasta}",
+            "--num_threads",
             f"{threads}",
             "--outdir",
             f"{mobrecon_output}",
@@ -201,7 +201,7 @@ def bedformat_integronfinder(ifinder_out):
         with open(f"{ifinder_outputbed}", "w") as f:
             f.write(str(output.stdout.decode()))
         # logger.debug(output.stderr.decode())
-        logger.success("Completed reformatting Integron Finder output")
+        logger.success(f"Completed reformatting Integron Finder output to {ifinder_outputbed}")
         return ifinder_outputbed
 
 
@@ -246,9 +246,7 @@ def bedformat_mobileelementfinder(mge_outputcsv):
         [
             f'grep -v \'^#\' {mge_outputcsv} \
             | csvtk cut -f contig,start,end,name,type -T \
-            | sed 1d \
-            | awk -F\'\\t\' \'{{split($1, a, " "); printf "%s\t",a[1]; for(i=2;i<=NF;++i) if(i!=NF){{printf "%s\\t", $i}}else{{printf "%s\\n", $i}}}}\' \
-            | sort-bed -',
+            | sed 1d'
         ],
         capture_output=True,
         shell=True,
@@ -259,10 +257,23 @@ def bedformat_mobileelementfinder(mge_outputcsv):
         logger.error(output.stderr.decode())
         sys.exit(2)
     else:
-        with open(f"{mge_outputbed}", "w") as f:
-            f.write(str(output.stdout.decode()))
-        # logger.debug(output.stderr.decode())
-        logger.success("Completed reformatting mge output")
+        with open(f"{mge_outputbed}.unsorted", "w") as f:
+            for lines in output.stdout.decode().split('\n'):
+                linelist = lines.split('\t')
+                if len(linelist) == 0: continue
+                mge_id = linelist[0]
+                if mge_id in description_to_id:
+                    f.write(description_to_id[mge_id] + "\t" + '\t'.join(linelist[1:]) + '\n')
+                else:
+                    f.write('\t'.join(linelist) + '\n')
+        output = subprocess.run(
+            [
+                f'sort-bed {mge_outputbed}.unsorted > {mge_outputbed}'
+            ],
+            check=True,
+            shell=True,
+        )
+        logger.success(f"Completed reformatting mge output to {mge_outputbed}")
         return mge_outputbed
 
 
@@ -274,10 +285,11 @@ def bedformat_plasmidfinder(pfinderout):
     output = subprocess.run(
         [
             f'csvtk cut -t -f Contig,\'Position in contig\',Plasmid,Note {pfinderout} \
-            | sed 1d \
-            | awk -F\'\\t\' \'{{split($1, a, " "); printf "%s\t", a[1]; split($2,b,"."); printf "%s\t%s\t", b[1], b[3]; for(i=3;i<=NF;++i) if(i!=NF){{printf "%s\\t", $i}}else{{printf "%s\\n", $i}}}}\' \
-            | sort-bed -',
+            | sed 1d'
         ],
+            # | awk -F\'\\t\' \'{{split($1, a, " "); printf "%s\t", a[1]; split($2,b,"."); printf "%s\t%s\t", b[1], b[3]}}\' \
+            # | sort-bed -',
+            # | awk -F\'\\t\' \'{{split($1, a, " "); printf "%s\t", a[1]; split($2,b,"."); printf "%s\t%s\t", b[1], b[3]; for(i=3;i<=NF;++i) if(i!=NF){{printf "%s\\t", $i}}else{{printf "%s\\n", $i}}}}\' \
         capture_output=True,
         shell=True,
     )
@@ -287,10 +299,25 @@ def bedformat_plasmidfinder(pfinderout):
         logger.error(output.stderr.decode())
         sys.exit(2)
     else:
-        with open(f"{pfinder_outputbed}", "w") as f:
-            f.write(str(output.stdout.decode()))
-        # logger.debug(output.stderr.decode())
-        logger.success("Completed reformatting plasmidfinder output")
+        with open(f"{pfinder_outputbed}.unsorted", "w") as f:
+            for lines in output.stdout.decode().split('\n'):
+                linelist = lines.split('\t')
+                if len(linelist) <= 1: continue
+                pfinder_id = linelist[0]
+                print(linelist[1])
+                pfinder_coords = linelist[1].split('..')
+                if pfinder_id in description_to_id:
+                    f.write(description_to_id[pfinder_id] + "\t" + '\t'.join(pfinder_coords) + "\t" + '\t'.join(linelist[2:]) + '\n')
+                else:
+                    f.write(pfinder_id + '\t' + '\t'.join(pfinder_coords) + '\t' + '\t'.join(linelist[2:]) + '\n')
+        output = subprocess.run(
+            [
+                f'sort-bed {pfinder_outputbed}.unsorted > {pfinder_outputbed}'
+            ],
+            check=True,
+            shell=True,
+        )
+        logger.success(f"Completed reformatting plasmidfinder output to {pfinder_outputbed}")
         return pfinder_outputbed
 
 
@@ -403,7 +430,6 @@ plasmid len: {max_plasmidlen:,} bp."
             else:
                 with open(f"{output_bed}", "a") as f:
                     f.write(str(output.stdout.decode()))
-                # logger.debug(output.stderr.decode())
     logger.success("Completed classifying PlasmidFinder output")
     return output_bed
 
@@ -434,8 +460,19 @@ def run_classify_integronfinder(input_fasta, input_bed):
         bedifinder = bedformat_integronfinder(ifinderout)
         classify_integronfinder(input_bed, bedifinder)
 
+def check_input(input_fasta, input_bed):
+    fasta_sequences = SeqIO.parse(open(input_fasta),'fasta')
+    global description_to_id
+    description_to_id = {}
+    for i in fasta_sequences:
+        description_to_id[i.description] = i.id
+    # print(description_to_id)
+
 
 def run_tools(input_fasta, input_bed):
+    logger.info(f"Input fasta: {input_fasta}")
+    logger.info(f"Input bed: {input_bed}")
+
     # run mobileelementfinder
     run_classify_mobileelementfinder(input_fasta, input_bed)
 
@@ -448,14 +485,13 @@ def run_tools(input_fasta, input_bed):
     # run mobrecon
     # run_classify_mobrecon(input_fasta, input_bed)
 
-
 def main():
     # set global vars
     global pipeline
     global repo_path
     global output_path
     global threads
-    pipeline = "PUTABILE"
+    pipeline = "MAMO"
 
     # set paths
     repo_path = os.path.dirname(os.path.realpath(__file__))
@@ -465,6 +501,9 @@ def main():
 
     output_path = args.output
     threads = args.threads
+
+    # check input
+    check_input(args.input, args.bed)
 
     # run all tools
     run_tools(args.input, args.bed)
