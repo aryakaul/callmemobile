@@ -345,7 +345,7 @@ def classify_mobileelementfinder(inputbed, bedmge):
         "/".join([bed, "input-mge_out-intersect.sorted.bed"])
     )
 
-    # test if the element is inside anything in ME finder 
+    # test if the element is inside anything in ME finder
     output = subprocess.run(
         [
             f"bedmap --echo --echo-map {inputbed} {bedmge} \
@@ -353,15 +353,17 @@ def classify_mobileelementfinder(inputbed, bedmge):
             | sed 's/|/\\t/' \
             | awk -F'\\t' '{{printf \"%s\\t%s\\t%s\\t%s|%s\\n\", $1, $2, $3, $7, $8}}'"
         ],
-            # f"bedmap --echo --echo-map {inputbed} {bedmge} \
-            # | grep -v '|$' \
-            # | sed 's/|/\\t//' \
-            # | cut -f 1,2,3,7-"
+        # f"bedmap --echo --echo-map {inputbed} {bedmge} \
+        # | grep -v '|$' \
+        # | sed 's/|/\\t//' \
+        # | cut -f 1,2,3,7-"
         capture_output=True,
         shell=True,
     )
     if output.returncode != 0:
-        logger.error("Error in classifying nested elements in mge's results! bedmap")
+        logger.error(
+            "Error in classifying nested elements in mge's results! bedmap"
+        )
         logger.error(output.stdout.decode())
         logger.error(output.stderr.decode())
         sys.exit(2)
@@ -384,7 +386,9 @@ def classify_mobileelementfinder(inputbed, bedmge):
         shell=True,
     )
     if output.returncode != 0:
-        logger.error("Error in identifying sandwiched elements in mge's results! bedops")
+        logger.error(
+            "Error in identifying sandwiched elements in mge's results! bedops"
+        )
         logger.error(output.stdout.decode())
         logger.error(output.stderr.decode())
         sys.exit(2)
@@ -396,22 +400,21 @@ def classify_mobileelementfinder(inputbed, bedmge):
     return output_bed
 
     # output = subprocess.run(
-        # [
-            # f"closest-features --dist --closest {inputbed} {bedmge} \
-            # | awk -F'\\t' '{{split($7, a, \"|\");if(sqrt(a[2]^2) < {maxdist}){{print $0}}}}'"
-        # ],
-        # capture_output=True,
-        # shell=True,
+    # [
+    # f"closest-features --dist --closest {inputbed} {bedmge} \
+    # | awk -F'\\t' '{{split($7, a, \"|\");if(sqrt(a[2]^2) < {maxdist}){{print $0}}}}'"
+    # ],
+    # capture_output=True,
+    # shell=True,
     # )
     # if output.returncode != 0:
-        # logger.error("Error in classifying mge's results! closest-features")
-        # logger.error(output.stdout.decode())
-        # logger.error(output.stderr.decode())
-        # sys.exit(2)
+    # logger.error("Error in classifying mge's results! closest-features")
+    # logger.error(output.stdout.decode())
+    # logger.error(output.stderr.decode())
+    # sys.exit(2)
     # else:
-        # with open(f"{output_bed}", "w") as f:
-            # f.write(str(output.stdout.decode()))
-
+    # with open(f"{output_bed}", "w") as f:
+    # f.write(str(output.stdout.decode()))
 
 
 def classify_integronfinder(input_bed, bedifinder):
@@ -420,7 +423,9 @@ def classify_integronfinder(input_bed, bedifinder):
     output_bed = os.path.join(
         "/".join([bed, "input-ifinder_out-intersect.sorted.bed"])
     )
-    logger.info(f"Classifying IntegronFinder results. Need {bedolap} overlap of gene regions w/ input regions to classify.")
+    logger.info(
+        f"Classifying IntegronFinder results. Need {bedolap} overlap of gene regions w/ input regions to classify."
+    )
     output = subprocess.run(
         [f"bedops -e {bedolap} {input_bed} {bedifinder}"],
         capture_output=True,
@@ -459,7 +464,9 @@ def classify_plasmidfinder(inputfasta, inputbed, bedpfinder):
 plasmid len: {max_plasmidlen:,} bp."
             )
             logger.info(f"treating {contig_id} as a chromosome.")
-            logger.info(f"searching for input elements within {maxdist} of plasmid elements")
+            logger.info(
+                f"searching for input elements within {maxdist} of plasmid elements"
+            )
             output = subprocess.run(
                 [
                     f"closest-features --chrom {contig_id} --dist --closest {inputbed} {bedpfinder} \
@@ -482,7 +489,9 @@ plasmid len: {max_plasmidlen:,} bp."
                 # logger.debug(output.stderr.decode())
         else:
             logger.info(f"{contig_id} is {contig_len:,} bp")
-            logger.info(f"treating {contig_id} as a plasmid. classifying all input elements on this contig as maybe mobile")
+            logger.info(
+                f"treating {contig_id} as a plasmid. classifying all input elements on this contig as maybe mobile"
+            )
             output = subprocess.run(
                 [
                     f'grep -q "{contig_id}" "{bedpfinder}" && grep "{contig_id}" "{inputbed}" \
@@ -541,6 +550,7 @@ def check_input(input_fasta, input_bed):
         description_to_id[i.description] = i.id
     # print(description_to_id)
 
+
 def search_classified_results(args):
     inputline, tooloutputs = args
     result = []
@@ -551,12 +561,15 @@ def search_classified_results(args):
                     result.append((inputline.strip(), tool_bedline.strip()))
     return result
 
+
 def merge_results(inputbed, tooloutputs):
     logger.info(f"Merging results...")
     with open(inputbed) as ib:
         inputlines = ib.readlines()
     pool = Pool()
-    results = pool.map(search_classified_results, [(line, tooloutputs) for line in inputlines])
+    results = pool.map(
+        search_classified_results, [(line, tooloutputs) for line in inputlines]
+    )
     pool.close()
     pool.join()
     result_dict = {}
@@ -565,10 +578,11 @@ def merge_results(inputbed, tooloutputs):
         result_dict[key] = []
 
     for result in results:
-        for key,value in result:
+        for key, value in result:
             result_dict[key].append(value)
     print(result_dict)
     return result_dict
+
 
 def run_tools(input_fasta, input_bed):
     logger.info(f"Input fasta: {input_fasta}")
@@ -585,7 +599,9 @@ def run_tools(input_fasta, input_bed):
 
     # run mobrecon
     # run_classify_mobrecon(input_fasta, input_bed)
-    merge_results(input_bed, [mefinder_outbed, integron_outbed, pfinder_outbed])
+    merge_results(
+        input_bed, [mefinder_outbed, integron_outbed, pfinder_outbed]
+    )
 
 
 def main():
