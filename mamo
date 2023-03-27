@@ -11,6 +11,10 @@ from loguru import logger
 import sys
 from Bio import SeqIO
 
+import modules.mobileelementfinder as mefinderfuncs
+import modules.IntegronFinder as integronfinderfuncs
+import modules.PlasmidFinder as plasmidfinderfuncs
+
 # import pandas as pd
 
 
@@ -63,88 +67,6 @@ def parse_arguments(version):
     return parser.parse_args()
 
 
-def run_mobileelementfinder(input_fasta):
-    mefinder_output = os.path.join(
-        "/".join([output_path, "mobileElementFinder_out"])
-    )
-    if not os.path.exists(mefinder_output):
-        os.makedirs(mefinder_output)
-        logger.info(
-            f"Created {mefinder_output} for output of mobileElementFinder"
-        )
-    mefinder_output = os.path.join("/".join([mefinder_output, "out"]))
-    output = subprocess.run(
-        [
-            "mefinder",
-            "find",
-            "--contig",
-            f"{input_fasta}",
-            "--threads",
-            f"{threads}",
-            f"{mefinder_output}",
-        ],
-        capture_output=True,
-    )
-    if output.returncode != 0:
-        logger.error("Error in mobileelementfinder!")
-        logger.error(output.stdout.decode())
-        logger.error(output.stderr.decode())
-        sys.exit(2)
-    else:
-        logger.debug(output.stdout.decode())
-        # logger.debug(output.stderr.decode())
-        logger.success("Completed mobileelementfinder")
-    return "".join([mefinder_output, ".csv"])
-
-
-def run_integronfinder(input_fasta):
-    integronfinder_output = os.path.join(
-        "/".join([output_path, "integronfinder_out"])
-    )
-    if not os.path.exists(integronfinder_output):
-        os.makedirs(integronfinder_output)
-        logger.info(
-            f"Created {integronfinder_output} for output of Integron-Finder"
-        )
-    input_fasta_basename = os.path.basename(input_fasta)
-    input_fasta_basename = os.path.splitext(input_fasta_basename)[0]
-    output = subprocess.run(
-        [
-            "integron_finder",
-            "--local-max",
-            "--cpu",
-            f"{threads}",
-            "--circ",
-            "--outdir",
-            f"{integronfinder_output}",
-            f"{input_fasta}",
-        ],
-        capture_output=True,
-    )
-    if output.returncode != 0:
-        logger.error("Error in IntegronFinder!")
-        logger.error(output.stdout.decode())
-        logger.error(output.stderr.decode())
-        sys.exit(2)
-    else:
-        logger.debug(output.stdout.decode())
-        # logger.debug(output.stderr.decode())
-        logger.success("Completed IntegronFinder")
-    integronfinder_output_integrons = os.path.join(
-        "/".join(
-            [
-                integronfinder_output,
-                "Results_Integron_Finder_" + input_fasta_basename,
-                input_fasta_basename + ".integrons",
-            ]
-        )
-    )
-    if os.path.exists(integronfinder_output_integrons):
-        return integronfinder_output_integrons
-    else:
-        return ""
-
-
 def run_mobrecon(ifasta):
     mobrecon_output = os.path.join("/".join([output_path, "mobrecon_out"]))
     if not os.path.exists(mobrecon_output):
@@ -175,371 +97,41 @@ def run_mobrecon(ifasta):
     return os.path.join("/".join([mobrecon_output, "contig_report.txt"]))
 
 
-def bedformat_integronfinder(ifinder_out):
-    ifinder_outputbed = os.path.dirname(ifinder_out)
-    ifinder_outputbed = os.path.join(
-        "/".join([ifinder_outputbed, "integronfinder_out.sorted.bed"])
-    )
-    output = subprocess.run(
-        [
-            f"grep -v '^#' {ifinder_out} \
-            | sed 1d \
-            | cut -f2,4,5 \
-            | sort-bed -",
-        ],
-        capture_output=True,
-        shell=True,
-    )
-    if output.returncode != 0:
-        logger.error("Error in formatting Integron Finder output as bedfile!")
-        logger.error(output.stdout.decode())
-        logger.error(output.stderr.decode())
-        sys.exit(2)
-    else:
-        with open(f"{ifinder_outputbed}", "w") as f:
-            f.write(str(output.stdout.decode()))
-        # logger.debug(output.stderr.decode())
-        logger.success(
-            f"Completed reformatting Integron Finder output to {ifinder_outputbed}"
-        )
-        return ifinder_outputbed
-
-
-def run_plasmidfinder(input_fasta):
-    plasmidfinder_output = os.path.join(
-        "/".join([output_path, "plasmidfinder_out"])
-    )
-    if not os.path.exists(plasmidfinder_output):
-        os.makedirs(plasmidfinder_output)
-        logger.info(
-            f"Created {plasmidfinder_output} for output of plasmidfinder"
-        )
-    output = subprocess.run(
-        [
-            "plasmidfinder.py",
-            "-i",
-            f"{input_fasta}",
-            "-o",
-            f"{plasmidfinder_output}",
-            "-x",
-        ],
-        capture_output=True,
-    )
-    if output.returncode != 0:
-        logger.error("Error in plasmidfinder!")
-        logger.error(output.stdout.decode())
-        logger.error(output.stderr.decode())
-        sys.exit(2)
-    else:
-        logger.debug(output.stdout.decode())
-        # logger.debug(output.stderr.decode())
-        logger.success("Completed plasmidfinder")
-    return os.path.join("/".join([plasmidfinder_output, "results_tab.tsv"]))
-
-
-def bedformat_mobileelementfinder(mge_outputcsv):
-    mge_outputbed = os.path.dirname(mge_outputcsv)
-    mge_outputbed = os.path.join(
-        "/".join([mge_outputbed, "mge_out.sorted.bed"])
-    )
-    output = subprocess.run(
-        [
-            f"grep -v '^#' {mge_outputcsv} \
-            | csvtk cut -f contig,start,end,name,type -T \
-            | sed 1d"
-        ],
-        capture_output=True,
-        shell=True,
-    )
-    if output.returncode != 0:
-        logger.error("Error in formatting mge output as bedfile!")
-        logger.error(output.stdout.decode())
-        logger.error(output.stderr.decode())
-        sys.exit(2)
-    else:
-        with open(f"{mge_outputbed}.unsorted", "w") as f:
-            for lines in output.stdout.decode().split("\n"):
-                linelist = lines.split("\t")
-                if len(linelist) == 0:
-                    continue
-                mge_id = linelist[0]
-                if mge_id in description_to_id:
-                    f.write(
-                        description_to_id[mge_id]
-                        + "\t"
-                        + "\t".join(linelist[1:])
-                        + "\n"
-                    )
-                else:
-                    f.write("\t".join(linelist) + "\n")
-        output = subprocess.run(
-            [f"sort-bed {mge_outputbed}.unsorted > {mge_outputbed}"],
-            check=True,
-            shell=True,
-        )
-        logger.success(f"Completed reformatting mge output to {mge_outputbed}")
-        return mge_outputbed
-
-
-def bedformat_plasmidfinder(pfinderout):
-    pfinder_outputbed = os.path.dirname(pfinderout)
-    pfinder_outputbed = os.path.join(
-        "/".join([pfinder_outputbed, "plasmidfinder_out.sorted.bed"])
-    )
-    output = subprocess.run(
-        [
-            f"csvtk cut -t -f Contig,'Position in contig',Plasmid,Note {pfinderout} \
-            | sed 1d"
-        ],
-        capture_output=True,
-        shell=True,
-    )
-    if output.returncode != 0:
-        logger.error("Error in formatting plasmidfinder output as bedfile!")
-        logger.error(output.stdout.decode())
-        logger.error(output.stderr.decode())
-        sys.exit(2)
-    else:
-        with open(f"{pfinder_outputbed}.unsorted", "w") as f:
-            for lines in output.stdout.decode().split("\n"):
-                linelist = lines.split("\t")
-                if len(linelist) <= 1:
-                    continue
-                pfinder_id = linelist[0]
-                print(linelist[1])
-                pfinder_coords = linelist[1].split("..")
-                if pfinder_id in description_to_id:
-                    f.write(
-                        description_to_id[pfinder_id]
-                        + "\t"
-                        + "\t".join(pfinder_coords)
-                        + "\t"
-                        + "\t".join(linelist[2:])
-                        + "\n"
-                    )
-                else:
-                    f.write(
-                        pfinder_id
-                        + "\t"
-                        + "\t".join(pfinder_coords)
-                        + "\t"
-                        + "\t".join(linelist[2:])
-                        + "\n"
-                    )
-        output = subprocess.run(
-            [f"sort-bed {pfinder_outputbed}.unsorted > {pfinder_outputbed}"],
-            check=True,
-            shell=True,
-        )
-        logger.success(
-            f"Completed reformatting plasmidfinder output to {pfinder_outputbed}"
-        )
-        return pfinder_outputbed
-
-
-def classify_mobileelementfinder(inputbed, bedmge):
-    maxdist = 20000
-
-    bed = os.path.dirname(bedmge)
-    output_bed = os.path.join(
-        "/".join([bed, "input-mge_out-intersect.sorted.bed"])
-    )
-
-    # test if the element is inside anything in ME finder
-    output = subprocess.run(
-        [
-            f"bedmap --echo --echo-map {inputbed} {bedmge} \
-            | grep -v '|$' \
-            | sed 's/|/\\t/' \
-            | awk -F'\\t' '{{printf \"%s\\t%s\\t%s\\t%s|%s\\n\", $1, $2, $3, $7, $8}}'"
-        ],
-        # f"bedmap --echo --echo-map {inputbed} {bedmge} \
-        # | grep -v '|$' \
-        # | sed 's/|/\\t//' \
-        # | cut -f 1,2,3,7-"
-        capture_output=True,
-        shell=True,
-    )
-    if output.returncode != 0:
-        logger.error(
-            "Error in classifying nested elements in mge's results! bedmap"
-        )
-        logger.error(output.stdout.decode())
-        logger.error(output.stderr.decode())
-        sys.exit(2)
-    else:
-        with open(f"{output_bed}", "w") as f:
-            f.write(str(output.stdout.decode()))
-
-    # test if the element is w/in max distance of two IS of the same type
-    output = subprocess.run(
-        [
-            f"bedops --range {maxdist} --element-of {bedmge} {inputbed} \
-                | awk '{{print $4}}' \
-                | sort \
-                | uniq -d \
-                | xargs -I{{}} awk '$4==\"{{}}\"' {bedmge} \
-                | bedops --range {maxdist} -e 1 {inputbed} - \
-                | awk 'FNR==NR{{a[$0];next}}$0 in a{{print $0\"\\t\"v}}' - v=\"$(bedops --range 20000 --element-of 1 {bedmge} {inputbed} | awk -F'\\t' '{{print $4,$5}}' | sort | uniq -d)\" {inputbed}"
-        ],
-        capture_output=True,
-        shell=True,
-    )
-    if output.returncode != 0:
-        logger.error(
-            "Error in identifying sandwiched elements in mge's results! bedops"
-        )
-        logger.error(output.stdout.decode())
-        logger.error(output.stderr.decode())
-        sys.exit(2)
-    else:
-        with open(f"{output_bed}", "a") as f:
-            f.write(str(output.stdout.decode()))
-    logger.debug(output.stderr.decode())
-    logger.success("Completed classifying mge output")
-    return output_bed
-
-    # output = subprocess.run(
-    # [
-    # f"closest-features --dist --closest {inputbed} {bedmge} \
-    # | awk -F'\\t' '{{split($7, a, \"|\");if(sqrt(a[2]^2) < {maxdist}){{print $0}}}}'"
-    # ],
-    # capture_output=True,
-    # shell=True,
-    # )
-    # if output.returncode != 0:
-    # logger.error("Error in classifying mge's results! closest-features")
-    # logger.error(output.stdout.decode())
-    # logger.error(output.stderr.decode())
-    # sys.exit(2)
-    # else:
-    # with open(f"{output_bed}", "w") as f:
-    # f.write(str(output.stdout.decode()))
-
-
-def classify_integronfinder(input_bed, bedifinder):
-    bed = os.path.dirname(bedifinder)
-    bedolap = "90%"
-    output_bed = os.path.join(
-        "/".join([bed, "input-ifinder_out-intersect.sorted.bed"])
-    )
-    logger.info(
-        f"Classifying IntegronFinder results. Need {bedolap} overlap of gene regions w/ input regions to classify."
-    )
-    output = subprocess.run(
-        [f"bedops -e {bedolap} {input_bed} {bedifinder}"],
-        capture_output=True,
-        shell=True,
-    )
-    if output.returncode != 0:
-        logger.error(
-            "Error in classifying Integron Finder's results! bedops -e"
-        )
-        logger.error(output.stdout.decode())
-        logger.error(output.stderr.decode())
-        sys.exit(2)
-    else:
-        with open(f"{output_bed}", "w") as f:
-            f.write(str(output.stdout.decode()))
-        logger.debug(output.stderr.decode())
-    logger.success("Completed classifying Integron Finder output")
-    return output_bed
-
-
-def classify_plasmidfinder(inputfasta, inputbed, bedpfinder):
-    max_plasmidlen = 200000
-    maxdist = 20000
-
-    bed = os.path.dirname(bedpfinder)
-    output_bed = os.path.join(
-        "/".join([bed, "input-pfinder_out-intersect.sorted.bed"])
-    )
-
-    for contig in SeqIO.parse(inputfasta, "fasta"):
-        contig_len = len(contig)
-        contig_id = contig.id
-        if contig_len > max_plasmidlen:
-            logger.info(
-                f"{contig_id} is {contig_len:,} bp which is greater than max \
-plasmid len: {max_plasmidlen:,} bp."
-            )
-            logger.info(f"treating {contig_id} as a chromosome.")
-            logger.info(
-                f"searching for input elements within {maxdist} of plasmid elements"
-            )
-            output = subprocess.run(
-                [
-                    f"closest-features --chrom {contig_id} --dist --closest {inputbed} {bedpfinder} \
-                    | grep -v '|NA|NA$' \
-                    | awk -F'\\t' '{{split($7, a, \"|\");if(sqrt(a[2]^2) < {maxdist}){{print $0}}}}'"
-                ],
-                capture_output=True,
-                shell=True,
-            )
-            if output.returncode != 0:
-                logger.error(
-                    f"Error in classifying PlasmidFinder's results! closest-features {contig_id}"
-                )
-                logger.error(output.stdout.decode())
-                logger.error(output.stderr.decode())
-                sys.exit(2)
-            else:
-                with open(f"{output_bed}", "w") as f:
-                    f.write(str(output.stdout.decode()))
-                # logger.debug(output.stderr.decode())
-        else:
-            logger.info(f"{contig_id} is {contig_len:,} bp")
-            logger.info(
-                f"treating {contig_id} as a plasmid. classifying all input elements on this contig as maybe mobile"
-            )
-            output = subprocess.run(
-                [
-                    f'grep -q "{contig_id}" "{bedpfinder}" && grep "{contig_id}" "{inputbed}" \
-                    | sed "s/$/\\tplasmid-contig/"'
-                ],
-                capture_output=True,
-                shell=True,
-            )
-            if output.returncode != 0:
-                logger.error(
-                    f"Error in classifying PlasmidFinder's results! grep {contig_id}"
-                )
-                logger.error(output.stdout.decode())
-                logger.error(output.stderr.decode())
-                sys.exit(2)
-            else:
-                with open(f"{output_bed}", "a") as f:
-                    f.write(str(output.stdout.decode()))
-    logger.success("Completed classifying PlasmidFinder output")
-    return output_bed
-
-
 def run_classify_mobileelementfinder(input_fasta, input_bed):
-    mgeout = run_mobileelementfinder(input_fasta)
-    bedmgeout = bedformat_mobileelementfinder(mgeout)
-    return classify_mobileelementfinder(input_bed, bedmgeout)
+    mgeout = mefinderfuncs.run_mobileelementfinder(
+        input_fasta, output_path, threads
+    )
+    bedmgeout = mefinderfuncs.bedformat_mobileelementfinder(
+        mgeout, description_to_id
+    )
+    return mefinderfuncs.classify_mobileelementfinder(input_bed, bedmgeout)
 
 
 def run_classify_plasmidfinder(input_fasta, input_bed):
-    pfinderout = run_plasmidfinder(input_fasta)
-    bedpfinderout = bedformat_plasmidfinder(pfinderout)
-    return classify_plasmidfinder(input_fasta, input_bed, bedpfinderout)
+    pfinderout = plasmidfinderfuncs.run_plasmidfinder(input_fasta, output_path)
+    bedpfinderout = plasmidfinderfuncs.bedformat_plasmidfinder(pfinderout, description_to_id)
+    return plasmidfinderfuncs.classify_plasmidfinder(
+        input_fasta, input_bed, bedpfinderout
+    )
 
 
-def run_classify_mobrecon(input_fasta, input_bed):
-    mobreconout = run_mobrecon(input_fasta)
-    # bedpfinderout = bedformat_mobrecon(pfinderout)
-    # classify_mobrecon(input_fasta, input_bed, bedpfinderout)
+def read_classify_mobrecon(input_fasta, mobrecondir, input_bed):
+    bedmobrecon = bedformat_mobrecon(mobrecondir)
+    classify_mobrecon(input_fasta, input_bed, bedpfinderout)
 
 
 def run_classify_integronfinder(input_fasta, input_bed):
-    ifinderout = run_integronfinder(input_fasta)
+    ifinderout = integronfinderfuncs.run_integronfinder(
+        input_fasta, output_path, threads
+    )
     if not ifinderout:
         logger.info("No integrons found. Moving on.")
         return ""
     else:
-        bedifinder = bedformat_integronfinder(ifinderout)
-        return classify_integronfinder(input_bed, bedifinder)
+        bedifinder = integronfinderfuncs.bedformat_integronfinder(ifinderout)
+        return integronfinderfuncs.classify_integronfinder(
+            input_bed, bedifinder
+        )
 
 
 def check_input(input_fasta, input_bed):
@@ -552,34 +144,38 @@ def check_input(input_fasta, input_bed):
 
 
 def search_classified_results(args):
-    inputline, tooloutputs = args
+    inputline, tooloutput_dict = args
     result = []
-    for tooloutput in tooloutputs:
+    for toolname in tooloutput_dict:
+        tooloutput = tooloutput_dict[toolname]
         with open(tooloutput) as f:
             for tool_bedline in f:
                 if inputline.strip() in tool_bedline:
-                    result.append((inputline.strip(), tool_bedline.strip()))
+                    result.append(
+                        (inputline.strip(), toolname, tool_bedline.strip())
+                    )
     return result
 
 
-def merge_results(inputbed, tooloutputs):
+def merge_results(inputbed, tooloutput_dict):
     logger.info(f"Merging results...")
     with open(inputbed) as ib:
         inputlines = ib.readlines()
     pool = Pool()
     results = pool.map(
-        search_classified_results, [(line, tooloutputs) for line in inputlines]
+        search_classified_results,
+        [(line, tooloutput_dict) for line in inputlines],
     )
     pool.close()
     pool.join()
     result_dict = {}
     for line in inputlines:
         key = line.strip()
-        result_dict[key] = []
+        result_dict[key] = {}
 
     for result in results:
-        for key, value in result:
-            result_dict[key].append(value)
+        for key, name, value in result:
+            result_dict[key][name] = value
     print(result_dict)
     return result_dict
 
@@ -600,7 +196,12 @@ def run_tools(input_fasta, input_bed):
     # run mobrecon
     # run_classify_mobrecon(input_fasta, input_bed)
     merge_results(
-        input_bed, [mefinder_outbed, integron_outbed, pfinder_outbed]
+        input_bed,
+        {
+            "mobileelementfinder": mefinder_outbed,
+            "IntegronFinder": integron_outbed,
+            "PlasmidFinder": pfinder_outbed,
+        },
     )
 
 
