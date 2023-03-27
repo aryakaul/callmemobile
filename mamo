@@ -2,20 +2,17 @@
 
 import argparse
 import subprocess
-
-from multiprocessing import Pool
+import sys
 import os
 
-# import glob
+from multiprocessing import Pool
 from loguru import logger
-import sys
 from Bio import SeqIO
 
 import modules.mobileelementfinder as mefinderfuncs
 import modules.IntegronFinder as integronfinderfuncs
 import modules.PlasmidFinder as plasmidfinderfuncs
-
-# import pandas as pd
+import modules.mob_suite as mobsuitefuncs
 
 
 def get_version():
@@ -62,39 +59,14 @@ def parse_arguments(version):
         help="Print program version",
         action="version",
         version=f"mamo {version}",
-        # version="hi",
+    )
+    parser.add_argument(
+        "--mobrecon_outdir",
+        help="Path to the output directory of mob_recon",
+        type=os.path.abspath,
+        required=False,
     )
     return parser.parse_args()
-
-
-def run_mobrecon(ifasta):
-    mobrecon_output = os.path.join("/".join([output_path, "mobrecon_out"]))
-    if not os.path.exists(mobrecon_output):
-        os.makedirs(mobrecon_output)
-        logger.info(f"Created {mobrecon_output} for output of mob_recon")
-    output = subprocess.run(
-        [
-            "mob_recon",
-            "--infile",
-            f"{ifasta}",
-            "--num_threads",
-            f"{threads}",
-            "--outdir",
-            f"{mobrecon_output}",
-            "--force",
-        ],
-        capture_output=True,
-    )
-    if output.returncode != 0:
-        logger.error("Error in mob_recon!")
-        logger.error(output.stdout.decode())
-        logger.error(output.stderr.decode())
-        sys.exit(2)
-    else:
-        logger.debug(output.stdout.decode())
-        # logger.debug(output.stderr.decode())
-        logger.success("Completed mob_recon")
-    return os.path.join("/".join([mobrecon_output, "contig_report.txt"]))
 
 
 def run_classify_mobileelementfinder(input_fasta, input_bed):
@@ -109,7 +81,9 @@ def run_classify_mobileelementfinder(input_fasta, input_bed):
 
 def run_classify_plasmidfinder(input_fasta, input_bed):
     pfinderout = plasmidfinderfuncs.run_plasmidfinder(input_fasta, output_path)
-    bedpfinderout = plasmidfinderfuncs.bedformat_plasmidfinder(pfinderout, description_to_id)
+    bedpfinderout = plasmidfinderfuncs.bedformat_plasmidfinder(
+        pfinderout, description_to_id
+    )
     return plasmidfinderfuncs.classify_plasmidfinder(
         input_fasta, input_bed, bedpfinderout
     )
@@ -141,6 +115,7 @@ def check_input(input_fasta, input_bed):
     for i in fasta_sequences:
         description_to_id[i.description] = i.id
     # print(description_to_id)
+    logger.debug(f"Fasta header to identifier is: {description_to_id}")
 
 
 def search_classified_results(args):
