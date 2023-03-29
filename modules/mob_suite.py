@@ -32,11 +32,14 @@ def run_mobrecon(ifasta):
         logger.success("Completed mob_recon")
     return os.path.join("/".join([mobrecon_output, "contig_report.txt"]))
 
+
 def classify_mobrecon(input_fasta, input_bed, mobrecondir):
     contigreport = os.path.join("/".join([mobrecondir, "contig_report.txt"]))
     mobtyper = os.path.join("/".join([mobrecondir, "mobtyper_results.txt"]))
     if not os.path.exists(mobtyper):
-        logger.info("No plasmids identified by mob_recon from the provided assembly sequence")
+        logger.info(
+            "No plasmids identified by mob_recon from the provided assembly sequence"
+        )
         return ""
     else:
         bed = os.path.dirname(mobrecondir)
@@ -49,8 +52,9 @@ def classify_mobrecon(input_fasta, input_bed, mobrecondir):
             contig_id = contig.id
             output = subprocess.run(
                 [
-                    f"grep -q '{contig_description}' {mobtyper} && grep '{contig_id}' '{inputbed}'"
-
+                    f"grep -q '{contig_description}' {mobtyper} \
+                    grep 'plasmid' \
+                    "
                 ],
                 capture_output=True,
                 shell=True,

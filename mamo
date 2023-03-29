@@ -125,7 +125,7 @@ def search_classified_results(args):
         tooloutput = tooloutput_dict[toolname]
         with open(tooloutput) as f:
             for tool_bedline in f:
-                if inputline.strip() in tool_bedline:
+                if "\t".join(inputline.strip().split()[:3]) in tool_bedline:
                     result.append(
                         (inputline.strip(), toolname, tool_bedline.strip())
                     )
@@ -155,6 +155,22 @@ def merge_results(inputbed, tooloutput_dict):
     return result_dict
 
 
+def output_result(result_dict):
+    with open(os.path.join(output_path, "mamoout.sorted.bed"), "w") as f:
+        for value in result_dict:
+            if "mobileelementfinder" not in result_dict[value]:
+                f.write("\t".join([value, "no-me" + "\n"]))
+            else:
+                f.write(
+                    "\t".join(
+                        [
+                            value,
+                            result_dict[value]["mobileelementfinder"] + "\n",
+                        ]
+                    )
+                )
+
+
 def run_tools(input_fasta, input_bed):
     logger.info(f"Input fasta: {input_fasta}")
     logger.info(f"Input bed: {input_bed}")
@@ -163,21 +179,22 @@ def run_tools(input_fasta, input_bed):
     mefinder_outbed = run_classify_mobileelementfinder(input_fasta, input_bed)
 
     # run integron_finder
-    integron_outbed = run_classify_integronfinder(input_fasta, input_bed)
+    # integron_outbed = run_classify_integronfinder(input_fasta, input_bed)
 
     # run plasmidfinder.py
-    pfinder_outbed = run_classify_plasmidfinder(input_fasta, input_bed)
+    # pfinder_outbed = run_classify_plasmidfinder(input_fasta, input_bed)
 
     # run mobrecon
     # run_classify_mobrecon(input_fasta, input_bed)
-    merge_results(
+    result_dict = merge_results(
         input_bed,
         {
             "mobileelementfinder": mefinder_outbed,
-            "IntegronFinder": integron_outbed,
-            "PlasmidFinder": pfinder_outbed,
+            # "IntegronFinder": integron_outbed,
+            # "PlasmidFinder": pfinder_outbed,
         },
     )
+    output_result(result_dict)
 
 
 def main():
