@@ -22,6 +22,8 @@ def run_mobileelementfinder(input_fasta, output_path, threads):
             f"{input_fasta}",
             "--threads",
             f"{threads}",
+            "--temp-dir",
+            f"{mefinder_output}/tmp",
             f"{mefinder_output}",
         ],
         capture_output=True,
@@ -83,25 +85,20 @@ def bedformat_mobileelementfinder(mge_outputcsv, description_to_id):
 
 
 def classify_mobileelementfinder(inputbed, bedmge):
-    maxdist = 20000
+    maxdist = 10000
 
     bed = os.path.dirname(bedmge)
     output_bed = os.path.join(
         "/".join([bed, "input-mge_out-intersect.sorted.bed"])
     )
 
-    # test if the element is inside anything in ME finder
+    # test if the element is nested inside anything in ME finder
     output = subprocess.run(
         [
-            f"bedmap --echo --echo-map {inputbed} {bedmge} \
+            f"bedmap --echo --echo-map-id-uniq --fraction-ref 1.0 {inputbed} {bedmge}\
             | grep -v '|$' \
-            | sed 's/|/\\t/' \
-            | awk -F'\\t' '{{printf \"%s\\t%s\\t%s\\t%s|%s\\n\", $1, $2, $3, $7, $8}}'"
+            | awk -F'\\t' '{{gsub(/\|/, \"|nested-\", $4); print}}'"
         ],
-        # f"bedmap --echo --echo-map {inputbed} {bedmge} \
-        # | grep -v '|$' \
-        # | sed 's/|/\\t//' \
-        # | cut -f 1,2,3,7-"
         capture_output=True,
         shell=True,
     )
@@ -113,20 +110,22 @@ def classify_mobileelementfinder(inputbed, bedmge):
         logger.error(output.stderr.decode())
         sys.exit(2)
     else:
-        with open(f"{output_bed}", "w") as f:
+        with open(f"{output_bed}.unsorted", "w") as f:
             f.write(str(output.stdout.decode()))
+
+    output_bed = os.path.join(
+        "/".join([bed, "input-mge_out-intersect.sorted.bed"])
+    )
 
     # test if the element is w/in max distance of two ME of the same type
     output = subprocess.run(
         [
-            f"bedops --range {maxdist} --element-of {bedmge} {inputbed} \
-                | awk '{{print $4}}' \
-                | sort \
-                | uniq -d \
-                | xargs -I{{}} awk '$4==\"{{}}\"' {bedmge} \
-                | bedops --range {maxdist} -e 1 {inputbed} - \
-                | awk 'FNR==NR{{a[$0];next}}$0 in a{{print $0\"\\t\"v}}' - v=\"$(bedops --range {maxdist} --element-of 1 {bedmge} {inputbed} | awk -F'\\t' '{{print $4,$5}}' | sort | uniq -d)\" {inputbed}"
+            f'bedmap --echo --echo-map-id --range {maxdist} {inputbed} {bedmge} \
+            | awk -F\'\\t\' \'{{split($4,a,"|"); split(a[2], b, ";"); for(i in b){{if(++count[b[i]] > 1){{$4=a[1]"|sandwiched-"b[i]; print; break}}}}; delete count}}\''
         ],
+        # | awk -F \"|\" '{{split($4,a,\";\"); for(i in a){{if(++count[a[i]] > 1){{$4=\"|\"a[i]; break}}}}; delete count; print $1,$2,$3,$4}}' \
+        # | awk '{{n=split($0,a,\"|\"); split(a[n],b,\";\"); for(i in b){{if(++count[b[i]] > 1){{a[n]=\"|\"b[i]; break}}}}; delete count; for(i=1;i<=n;i++) printf \"%s%s\", a[i], (i==n?ORS:OFS)}}' \
+        # | awk -F '|' '{{split($4,a,\";\"); for(i in a){{if(++count[a[i]] > 1){{$4=\"|\"a[i]; break}}}}; delete count; print}}' \
         capture_output=True,
         shell=True,
     )
@@ -138,9 +137,14 @@ def classify_mobileelementfinder(inputbed, bedmge):
         logger.error(output.stderr.decode())
         sys.exit(2)
     else:
-        with open(f"{output_bed}", "a") as f:
+        with open(f"{output_bed}.unsorted", "a") as f:
             f.write(str(output.stdout.decode()))
     logger.debug(output.stderr.decode())
+    output = subprocess.run(
+        [f"sort-bed {output_bed}.unsorted > {output_bed}"],
+        check=True,
+        shell=True,
+    )
     logger.success("Completed classifying mge output")
     return output_bed
 
