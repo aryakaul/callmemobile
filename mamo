@@ -114,7 +114,6 @@ def check_input(input_fasta, input_bed):
     description_to_id = {}
     for i in fasta_sequences:
         description_to_id[i.description] = i.id
-    # print(description_to_id)
     logger.debug(f"Fasta header to identifier is: {description_to_id}")
 
 
@@ -150,25 +149,72 @@ def merge_results(inputbed, tooloutput_dict):
 
     for result in results:
         for key, name, value in result:
-            result_dict[key][name] = value
-    print(result_dict)
+            if name not in result_dict[key]:
+                result_dict[key][name] = []
+            result_dict[key][name].append(value)
+    # for value in result_dict:
+    # if "mobileelementfinder" not in result_dict[value]:
+    # print(value)
+    # else:
+    # print(value)
+    # print(result_dict[value])
+    # print(result_dict[value]["mobileelementfinder"])
+    # print("")
     return result_dict
 
 
 def output_result(result_dict):
-    with open(os.path.join(output_path, "mamoout.sorted.bed"), "w") as f:
+    mamoout_unsorted = os.path.join(output_path, "mamoout.unsorted.bed")
+    mamoout_sorted = os.path.join(output_path, "mamoout.sorted.bed")
+    with open(mamoout_unsorted, "w") as f:
+        f.write(
+            "\t".join(
+                [
+                    "Contig",
+                    "Start",
+                    "End",
+                    "Annotation",
+                    "mobileelementfinder" + "\n",
+                ]
+            )
+        )
         for value in result_dict:
             if "mobileelementfinder" not in result_dict[value]:
                 f.write("\t".join([value, "no-me" + "\n"]))
             else:
-                f.write(
-                    "\t".join(
-                        [
-                            value,
-                            result_dict[value]["mobileelementfinder"] + "\n",
-                        ]
-                    )
-                )
+                mobileelements = result_dict[value]["mobileelementfinder"]
+                me_out = []
+                for me in mobileelements:
+                    me_append = me.split("\t")[3].split("|")[1]
+                    me_out.append(me_append)
+                f.write("\t".join([value, "|".join(me_out) + "\n"]))
+                # mobileelement=result_dict[value]['mobileelementfinder'].split('\t')[3]
+                # sandwiched = False
+                # print(mobileelement)
+                # if mobileelement.split('|')[0][-1] == ' ': sandwiched=True
+                # if sandwiched:
+                # f.write(
+                # "\t".join(
+                # [
+                # value,
+                # "sandwiched-" + mobileelement.split('|')[1] + "\n",
+                # ]
+                # )
+                # )
+                # else:
+                # f.write(
+                # "\t".join(
+                # [
+                # value,
+                # "within-" + mobileelement.split('|')[1] + "\n",
+                # ]
+                # )
+                # )
+
+    output = subprocess.run(
+        ["sort-bed", f"{mamoout_unsorted}", ">", f"{mamoout_sorted}"],
+        capture_output=True,
+    )
 
 
 def run_tools(input_fasta, input_bed):

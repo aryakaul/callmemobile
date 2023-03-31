@@ -22,6 +22,8 @@ def run_mobileelementfinder(input_fasta, output_path, threads):
             f"{input_fasta}",
             "--threads",
             f"{threads}",
+            "--temp-dir",
+            f"{mefinder_output}/tmp",
             f"{mefinder_output}",
         ],
         capture_output=True,
@@ -94,7 +96,8 @@ def classify_mobileelementfinder(inputbed, bedmge):
     output = subprocess.run(
         [
             f"bedmap --echo --echo-map-id-uniq --fraction-ref 1.0 {inputbed} {bedmge}\
-            | grep -v '|$'"
+            | grep -v '|$' \
+            | awk -F'\\t' '{{gsub(/\|/, \"|nested-\", $4); print}}'"
         ],
         capture_output=True,
         shell=True,
@@ -107,7 +110,7 @@ def classify_mobileelementfinder(inputbed, bedmge):
         logger.error(output.stderr.decode())
         sys.exit(2)
     else:
-        with open(f"{output_bed}", "w") as f:
+        with open(f"{output_bed}.unsorted", "w") as f:
             f.write(str(output.stdout.decode()))
 
     output_bed = os.path.join(
@@ -117,10 +120,12 @@ def classify_mobileelementfinder(inputbed, bedmge):
     # test if the element is w/in max distance of two ME of the same type
     output = subprocess.run(
         [
-            f"bedmap --echo --echo-map-id --range {maxdist} {inputbed} {bedmge} \
-    | awk -F '|' '{{split($4,a,\";\"); for(i in a){{if(++count[a[i]] > 1){{$4=\"|\"a[i]; break}}}}; delete count; print}}' \
-    | grep -v '|$'"
+            f'bedmap --echo --echo-map-id --range {maxdist} {inputbed} {bedmge} \
+            | awk -F\'\\t\' \'{{split($4,a,"|"); split(a[2], b, ";"); for(i in b){{if(++count[b[i]] > 1){{$4=a[1]"|sandwiched-"b[i]; print; break}}}}; delete count}}\''
         ],
+        # | awk -F \"|\" '{{split($4,a,\";\"); for(i in a){{if(++count[a[i]] > 1){{$4=\"|\"a[i]; break}}}}; delete count; print $1,$2,$3,$4}}' \
+        # | awk '{{n=split($0,a,\"|\"); split(a[n],b,\";\"); for(i in b){{if(++count[b[i]] > 1){{a[n]=\"|\"b[i]; break}}}}; delete count; for(i=1;i<=n;i++) printf \"%s%s\", a[i], (i==n?ORS:OFS)}}' \
+        # | awk -F '|' '{{split($4,a,\";\"); for(i in a){{if(++count[a[i]] > 1){{$4=\"|\"a[i]; break}}}}; delete count; print}}' \
         capture_output=True,
         shell=True,
     )
@@ -132,9 +137,14 @@ def classify_mobileelementfinder(inputbed, bedmge):
         logger.error(output.stderr.decode())
         sys.exit(2)
     else:
-        with open(f"{output_bed}", "a") as f:
+        with open(f"{output_bed}.unsorted", "a") as f:
             f.write(str(output.stdout.decode()))
     logger.debug(output.stderr.decode())
+    output = subprocess.run(
+        [f"sort-bed {output_bed}.unsorted > {output_bed}"],
+        check=True,
+        shell=True,
+    )
     logger.success("Completed classifying mge output")
     return output_bed
 
