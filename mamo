@@ -66,6 +66,12 @@ def parse_arguments(version):
         type=os.path.abspath,
         required=False,
     )
+    parser.add_argument(
+        "--mobileelementfinder_outdir",
+        help="Path to the output directory of mobileelementfinder",
+        type=os.path.abspath,
+        required=False,
+    )
     return parser.parse_args()
 
 
@@ -111,10 +117,48 @@ def run_classify_integronfinder(input_fasta, input_bed):
 def check_input(input_fasta, input_bed):
     fasta_sequences = SeqIO.parse(open(input_fasta), "fasta")
     global description_to_id
+    # define a dictionary of chromosome keys and values
     description_to_id = {}
     for i in fasta_sequences:
         description_to_id[i.description] = i.id
     logger.debug(f"Fasta header to identifier is: {description_to_id}")
+    output_bed = os.path.join(
+        os.path.dirname(input_bed),
+        os.path.basename(input_bed) + "-chromosomeid",
+    )
+
+    exit = False
+    # open the input BED file for reading
+    with open(input_bed, "r") as input_file:
+        # open the output BED file for writing
+        with open(output_bed, "w") as output_file:
+            # loop through each line in the input BED file
+            for line in input_file:
+                # split the line into columns
+                fields = line.strip().split("\t")
+                if len(fields) != 4:
+                    logger.error(
+                        f"Number of columns is {len(fields)}! This is not 4! Please make it 4 columns!"
+                    )
+
+                # check if the chromosome in the line matches a key in the dictionary
+                if fields[0] in description_to_id:
+                    exit = True
+                    logger.error(
+                        f"{fields[0]} found in bed file! Please use {description_to_id[fields[0]]} instead!"
+                    )
+                    # if there is a match, replace the chromosome value with the dictionary value
+                    fields[0] = description_to_id[fields[0]]
+
+                # write the updated line to the output BED file
+                output_file.write("\t".join(fields) + "\n")
+    if exit:
+        logger.error(
+            f"Error in bedfile chromosome format. Reformatted bedfile outputted here {output_bed}. Please rerun mamo with that bed file instead!"
+        )
+        sys.exit(2)
+    else:
+        os.remove(output_bed)
 
 
 def search_classified_results(args):
@@ -160,10 +204,11 @@ def merge_results(inputbed, tooloutput_dict):
     # print(result_dict[value])
     # print(result_dict[value]["mobileelementfinder"])
     # print("")
+    print(result_dict)
     return result_dict
 
 
-def output_result(result_dict):
+def output_result(result_dict, tooldict):
     mamoout_unsorted = os.path.join(output_path, "mamoout.unsorted.bed")
     mamoout_sorted = os.path.join(output_path, "mamoout.sorted.bed")
     with open(mamoout_unsorted, "w") as f:
@@ -174,9 +219,10 @@ def output_result(result_dict):
                     "Start",
                     "End",
                     "Annotation",
-                    "mobileelementfinder" + "\n",
                 ]
+                + list(tooldict.keys())
             )
+            + "\n"
         )
         for value in result_dict:
             if "mobileelementfinder" not in result_dict[value]:
@@ -188,28 +234,6 @@ def output_result(result_dict):
                     me_append = me.split("\t")[3].split("|")[1]
                     me_out.append(me_append)
                 f.write("\t".join([value, "|".join(me_out) + "\n"]))
-                # mobileelement=result_dict[value]['mobileelementfinder'].split('\t')[3]
-                # sandwiched = False
-                # print(mobileelement)
-                # if mobileelement.split('|')[0][-1] == ' ': sandwiched=True
-                # if sandwiched:
-                # f.write(
-                # "\t".join(
-                # [
-                # value,
-                # "sandwiched-" + mobileelement.split('|')[1] + "\n",
-                # ]
-                # )
-                # )
-                # else:
-                # f.write(
-                # "\t".join(
-                # [
-                # value,
-                # "within-" + mobileelement.split('|')[1] + "\n",
-                # ]
-                # )
-                # )
 
     output = subprocess.run(
         ["sort-bed", f"{mamoout_unsorted}", ">", f"{mamoout_sorted}"],
@@ -232,15 +256,11 @@ def run_tools(input_fasta, input_bed):
 
     # run mobrecon
     # run_classify_mobrecon(input_fasta, input_bed)
-    result_dict = merge_results(
-        input_bed,
-        {
-            "mobileelementfinder": mefinder_outbed,
-            # "IntegronFinder": integron_outbed,
-            # "PlasmidFinder": pfinder_outbed,
-        },
-    )
-    output_result(result_dict)
+
+    tool_dict = {"mobileelementfinder": mefinder_outbed}
+
+    result_dict = merge_results(input_bed, tool_dict)
+    output_result(result_dict, tool_dict)
 
 
 def main():
