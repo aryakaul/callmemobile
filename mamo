@@ -137,15 +137,17 @@ def check_input(input_fasta, input_bed):
                 # split the line into columns
                 fields = line.strip().split("\t")
                 if len(fields) != 4:
+                    print(fields)
                     logger.error(
                         f"Number of columns is {len(fields)}! This is not 4! Please make it 4 columns!"
                     )
+                    exit = True
 
                 # check if the chromosome in the line matches a key in the dictionary
                 if fields[0] in description_to_id:
                     exit = True
                     logger.error(
-                        f"{fields[0]} found in bed file! Please use {description_to_id[fields[0]]} instead!"
+                        f"{fields[0]} found in bed file! Please use {description_to_id[fields[0]]} instead! Reformatted bedfile outputted here {output_bed}. Please rerun mamo with that bed file instead!"
                     )
                     # if there is a match, replace the chromosome value with the dictionary value
                     fields[0] = description_to_id[fields[0]]
@@ -153,9 +155,6 @@ def check_input(input_fasta, input_bed):
                 # write the updated line to the output BED file
                 output_file.write("\t".join(fields) + "\n")
     if exit:
-        logger.error(
-            f"Error in bedfile chromosome format. Reformatted bedfile outputted here {output_bed}. Please rerun mamo with that bed file instead!"
-        )
         sys.exit(2)
     else:
         os.remove(output_bed)
@@ -211,6 +210,7 @@ def merge_results(inputbed, tooloutput_dict):
 def output_result(result_dict, tooldict):
     mamoout_unsorted = os.path.join(output_path, "mamoout.unsorted.bed")
     mamoout_sorted = os.path.join(output_path, "mamoout.sorted.bed")
+    toolsran = list(tooldict.keys())
     with open(mamoout_unsorted, "w") as f:
         f.write(
             "\t".join(
@@ -220,20 +220,37 @@ def output_result(result_dict, tooldict):
                     "End",
                     "Annotation",
                 ]
-                + list(tooldict.keys())
+                + toolsran
             )
             + "\n"
         )
+
         for value in result_dict:
-            if "mobileelementfinder" not in result_dict[value]:
-                f.write("\t".join([value, "no-me" + "\n"]))
-            else:
-                mobileelements = result_dict[value]["mobileelementfinder"]
-                me_out = []
-                for me in mobileelements:
-                    me_append = me.split("\t")[3].split("|")[1]
-                    me_out.append(me_append)
-                f.write("\t".join([value, "|".join(me_out) + "\n"]))
+            line_append = []
+            if "mobileelementfinder" in toolsran:
+                if "mobileelementfinder" not in result_dict[value]:
+                    line_append.append("no-me")
+                    # f.write("\t".join([value, "no-me" + "\n"]))
+                else:
+                    mobileelements = result_dict[value]["mobileelementfinder"]
+                    me_out = []
+                    for me in mobileelements:
+                        me_append = me.split("\t")[3].split("|")[1]
+                        me_out.append(me_append)
+                    line_append.append("|".join(me_out))
+                    # f.write("\t".join([value, "|".join(me_out) + "\n"]))
+            if "IntegronFinder" in toolsran:
+                if "IntegronFinder" not in result_dict[value]:
+                    line_append.append("no-integron")
+                    # f.write("\t".join([value, "no-integron" + "\n"]))
+                else:
+                    if_out = result_dict[value]["IntegronFinder"][0].split(
+                        "|"
+                    )[1]
+                    line_append.append(if_out)
+                    # f.write("\t".join([value, if_out + "\n"]))
+            line_append[-1] = line_append[-1] + "\n"
+            f.write("\t".join([value] + line_append))
 
     output = subprocess.run(
         ["sort-bed", f"{mamoout_unsorted}", ">", f"{mamoout_sorted}"],
@@ -249,7 +266,7 @@ def run_tools(input_fasta, input_bed):
     mefinder_outbed = run_classify_mobileelementfinder(input_fasta, input_bed)
 
     # run integron_finder
-    # integron_outbed = run_classify_integronfinder(input_fasta, input_bed)
+    integron_outbed = run_classify_integronfinder(input_fasta, input_bed)
 
     # run plasmidfinder.py
     # pfinder_outbed = run_classify_plasmidfinder(input_fasta, input_bed)
@@ -257,7 +274,10 @@ def run_tools(input_fasta, input_bed):
     # run mobrecon
     # run_classify_mobrecon(input_fasta, input_bed)
 
-    tool_dict = {"mobileelementfinder": mefinder_outbed}
+    tool_dict = {
+        "mobileelementfinder": mefinder_outbed,
+        "IntegronFinder": integron_outbed,
+    }
 
     result_dict = merge_results(input_bed, tool_dict)
     output_result(result_dict, tool_dict)

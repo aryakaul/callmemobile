@@ -63,7 +63,7 @@ def bedformat_integronfinder(ifinder_out):
         [
             f"grep -v '^#' {ifinder_out} \
             | sed 1d \
-            | cut -f2,4,5 \
+            | cut -f2,4,5,11 \
             | sort-bed -",
         ],
         capture_output=True,
@@ -86,15 +86,16 @@ def bedformat_integronfinder(ifinder_out):
 
 def classify_integronfinder(input_bed, bedifinder):
     bed = os.path.dirname(bedifinder)
-    bedolap = "90%"
-    output_bed = os.path.join(
-        "/".join([bed, "input-ifinder_out-intersect.sorted.bed"])
-    )
+    bedolap = "0.9"
+    output_bed = os.path.join(bed, "input-ifinder_out-intersect.sorted.bed")
     logger.info(
         f"Classifying IntegronFinder results. Need {bedolap} overlap of gene regions w/ input regions to classify."
     )
     output = subprocess.run(
-        [f"bedops -e {bedolap} {input_bed} {bedifinder}"],
+        [
+            f"bedmap --echo --echo-map-id-uniq --fraction-ref {bedolap} {input_bed} {bedifinder} \
+            | grep -v '|$'"
+        ],
         capture_output=True,
         shell=True,
     )
