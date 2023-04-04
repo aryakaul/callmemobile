@@ -49,20 +49,7 @@ def run_integronfinder(input_fasta, output_path, threads):
         )
     )
 
-    if os.path.exists(integronfinder_output_integrons):
-        with open(integronfinder_output_integrons) as f:
-            for line in f:
-                if "# No Integron found" in line:
-                    logger.info("No integrons found")
-                    return ""
-            else:
-                # print("File does not contain '# No Integron found'.")
-                return integronfinder_output_integrons
-    else:
-        return ""
-        # return integronfinder_output_integrons
-    # else:
-    # return ""
+    return integronfinder_output_integrons
 
 
 def bedformat_integronfinder(ifinder_out):

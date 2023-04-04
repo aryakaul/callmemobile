@@ -98,25 +98,40 @@ def classify_plasmidfinder(inputfasta, inputbed, bedpfinder):
     maxdist = 20000
 
     bed = os.path.dirname(bedpfinder)
-    output_bed = os.path.join(
-        "/".join([bed, "input-pfinder_out-intersect.sorted.bed"])
-    )
+    output_bed = os.path.join(bed, "input-pfinder_out-intersect.sorted.bed")
+    with open(f"{output_bed}", "w") as f:
+        pass
 
     for contig in SeqIO.parse(inputfasta, "fasta"):
+        output = subprocess.run(
+            [
+                "grep", contig.id, bedpfinder
+            ], stdout=subprocess.PIPE
+        ).stdout.decode('utf-8')
+        if not output:
+            logger.info(f"No plasmid elements found on {contig.id}. Continuing")
+            continue
+        output = subprocess.run(
+            [
+                "grep", contig.id, inputbed
+            ], stdout=subprocess.PIPE
+        ).stdout.decode('utf-8')
+        if not output:
+            logger.info(f"No tested elements are on {contig.id}. Continuing")
+            continue
         contig_len = len(contig)
-        contig_id = contig.id
         if contig_len > max_plasmidlen:
             logger.info(
-                f"{contig_id} is {contig_len:,} bp which is greater than max \
+                f"{contig.id} is {contig_len:,} bp which is greater than max \
 plasmid len: {max_plasmidlen:,} bp."
             )
-            logger.info(f"treating {contig_id} as a chromosome.")
+            logger.info(f"treating {contig.id} as a chromosome.")
             logger.info(
                 f"searching for input elements within {maxdist} of plasmid elements"
             )
             output = subprocess.run(
                 [
-                    f"closest-features --chrom {contig_id} --dist --closest {inputbed} {bedpfinder} \
+                    f"closest-features --chrom {contig.id} --dist --closest {inputbed} {bedpfinder} \
                     | grep -v '|NA|NA$' \
                     | awk -F'\\t' '{{split($7, a, \"|\");if(sqrt(a[2]^2) < {maxdist}){{print $0}}}}'"
                 ],
@@ -125,7 +140,7 @@ plasmid len: {max_plasmidlen:,} bp."
             )
             if output.returncode != 0:
                 logger.error(
-                    f"Error in classifying PlasmidFinder's results! closest-features {contig_id}"
+                    f"Error in classifying PlasmidFinder's results! closest-features {contig.id}"
                 )
                 logger.error(output.stdout.decode())
                 logger.error(output.stderr.decode())
@@ -135,21 +150,21 @@ plasmid len: {max_plasmidlen:,} bp."
                     f.write(str(output.stdout.decode()))
                 # logger.debug(output.stderr.decode())
         else:
-            logger.info(f"{contig_id} is {contig_len:,} bp")
+            logger.info(f"{contig.id} is {contig_len:,} bp")
             logger.info(
-                f"treating {contig_id} as a plasmid. classifying all input elements on this contig as maybe mobile"
+                f"treating {contig.id} as a plasmid. classifying all input elements on this contig as maybe mobile"
             )
             output = subprocess.run(
                 [
-                    f'grep -q "{contig_id}" "{bedpfinder}" && grep "{contig_id}" "{inputbed}" \
-                    | sed "s/$/\\tplasmid-contig/"'
+                    f'grep "{contig.id}" "{inputbed}" \
+| sed "s/$/\tplasmid-contig|$(grep {contig.id} {bedpfinder} | cut -f4 | tr "\\n" "-" | sed "s/-$/\\n"/)/"'
                 ],
                 capture_output=True,
                 shell=True,
             )
             if output.returncode != 0:
                 logger.error(
-                    f"Error in classifying PlasmidFinder's results! grep {contig_id}"
+                    f"Error in classifying PlasmidFinder's results! grep {contig.id}"
                 )
                 logger.error(output.stdout.decode())
                 logger.error(output.stderr.decode())
