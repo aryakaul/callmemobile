@@ -250,12 +250,14 @@ def output_result(result_dict, tooldict):
             line_append[-1] = line_append[-1] + "\n"
             f.write("\t".join([value] + line_append))
 
-    with open(mamoout_sorted, 'w') as outfile:
+    with open(mamoout_sorted, "w") as outfile:
         output = subprocess.run(
             ["sort-bed", f"{mamoout_unsorted}"],
             stdout=outfile,
         )
-    logger.success(f"Mamo completed successfully! Output here: {mamoout_sorted}")
+    logger.success(
+        f"Mamo completed successfully! Output here: {mamoout_sorted}"
+    )
 
 
 def run_tools(input_fasta, input_bed):
