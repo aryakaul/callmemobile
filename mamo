@@ -95,23 +95,17 @@ def run_classify_plasmidfinder(input_fasta, input_bed):
     )
 
 
-def read_classify_mobrecon(input_fasta, mobrecondir, input_bed):
-    bedmobrecon = bedformat_mobrecon(mobrecondir)
-    classify_mobrecon(input_fasta, input_bed, bedpfinderout)
-
-
 def run_classify_integronfinder(input_fasta, input_bed):
     ifinderout = integronfinderfuncs.run_integronfinder(
         input_fasta, output_path, threads
     )
-    if not ifinderout:
-        logger.info("No integrons found. Moving on.")
-        return ""
-    else:
-        bedifinder = integronfinderfuncs.bedformat_integronfinder(ifinderout)
-        return integronfinderfuncs.classify_integronfinder(
-            input_bed, bedifinder
-        )
+    with open(ifinderout) as f:
+        for line in f:
+            if "# No Integron found" in line:
+                logger.info("No integrons found")
+                return ifinderout
+    bedifinder = integronfinderfuncs.bedformat_integronfinder(ifinderout)
+    return integronfinderfuncs.classify_integronfinder(input_bed, bedifinder)
 
 
 def check_input(input_fasta, input_bed):
@@ -195,15 +189,7 @@ def merge_results(inputbed, tooloutput_dict):
             if name not in result_dict[key]:
                 result_dict[key][name] = []
             result_dict[key][name].append(value)
-    # for value in result_dict:
-    # if "mobileelementfinder" not in result_dict[value]:
-    # print(value)
-    # else:
-    # print(value)
-    # print(result_dict[value])
-    # print(result_dict[value]["mobileelementfinder"])
-    # print("")
-    print(result_dict)
+    # print(result_dict)
     return result_dict
 
 
@@ -215,7 +201,7 @@ def output_result(result_dict, tooldict):
         f.write(
             "\t".join(
                 [
-                    "Contig",
+                    "#Contig",
                     "Start",
                     "End",
                     "Annotation",
@@ -230,7 +216,6 @@ def output_result(result_dict, tooldict):
             if "mobileelementfinder" in toolsran:
                 if "mobileelementfinder" not in result_dict[value]:
                     line_append.append("no-me")
-                    # f.write("\t".join([value, "no-me" + "\n"]))
                 else:
                     mobileelements = result_dict[value]["mobileelementfinder"]
                     me_out = []
@@ -238,23 +223,40 @@ def output_result(result_dict, tooldict):
                         me_append = me.split("\t")[3].split("|")[1]
                         me_out.append(me_append)
                     line_append.append("|".join(me_out))
-                    # f.write("\t".join([value, "|".join(me_out) + "\n"]))
             if "IntegronFinder" in toolsran:
                 if "IntegronFinder" not in result_dict[value]:
                     line_append.append("no-integron")
-                    # f.write("\t".join([value, "no-integron" + "\n"]))
                 else:
                     if_out = result_dict[value]["IntegronFinder"][0].split(
                         "|"
                     )[1]
                     line_append.append(if_out)
-                    # f.write("\t".join([value, if_out + "\n"]))
+            if "PlasmidFinder" in toolsran:
+                if "PlasmidFinder" not in result_dict[value]:
+                    line_append.append("no-plasmid")
+                else:
+                    pfinder_out = result_dict[value]["PlasmidFinder"][0].split(
+                        "\t"
+                    )[4]
+                    line_append.append(pfinder_out)
+            if "mob_recon" in toolsran:
+                if "mob_recon" not in result_dict[value]:
+                    line_append.append("no-plasmid")
+                else:
+                    mobrecon_out = result_dict[value]["mob_recon"][0].split(
+                        "\t"
+                    )[4]
+                    line_append.append(mobrecon_out)
             line_append[-1] = line_append[-1] + "\n"
             f.write("\t".join([value] + line_append))
 
-    output = subprocess.run(
-        ["sort-bed", f"{mamoout_unsorted}", ">", f"{mamoout_sorted}"],
-        capture_output=True,
+    with open(mamoout_sorted, "w") as outfile:
+        output = subprocess.run(
+            ["sort-bed", f"{mamoout_unsorted}"],
+            stdout=outfile,
+        )
+    logger.success(
+        f"Mamo completed successfully! Output here: {mamoout_sorted}"
     )
 
 
@@ -269,17 +271,23 @@ def run_tools(input_fasta, input_bed):
     integron_outbed = run_classify_integronfinder(input_fasta, input_bed)
 
     # run plasmidfinder.py
-    # pfinder_outbed = run_classify_plasmidfinder(input_fasta, input_bed)
-
-    # run mobrecon
-    # run_classify_mobrecon(input_fasta, input_bed)
+    pfinder_outbed = run_classify_plasmidfinder(input_fasta, input_bed)
 
     tool_dict = {
         "mobileelementfinder": mefinder_outbed,
         "IntegronFinder": integron_outbed,
+        "PlasmidFinder": pfinder_outbed,
     }
 
+    # classify mobrecon
+    if args.mobrecon_outdir:
+        mobrecon_outbed = mobsuitefuncs.classify_mobrecon(
+            input_fasta, input_bed, args.mobrecon_outdir, args.output
+        )
+        tool_dict["mob_recon"] = mobrecon_outbed
+
     result_dict = merge_results(input_bed, tool_dict)
+    # print(result_dict)
     output_result(result_dict, tool_dict)
 
 
@@ -289,6 +297,7 @@ def main():
     global repo_path
     global output_path
     global threads
+    global args
     pipeline = "MAMO"
 
     # set paths

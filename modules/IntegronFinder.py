@@ -48,10 +48,8 @@ def run_integronfinder(input_fasta, output_path, threads):
             ]
         )
     )
-    if os.path.exists(integronfinder_output_integrons):
-        return integronfinder_output_integrons
-    else:
-        return ""
+
+    return integronfinder_output_integrons
 
 
 def bedformat_integronfinder(ifinder_out):
@@ -101,7 +99,7 @@ def classify_integronfinder(input_bed, bedifinder):
     )
     if output.returncode != 0:
         logger.error(
-            "Error in classifying Integron Finder's results! bedops -e"
+            "Error in classifying Integron Finder's results! bedmap"
         )
         logger.error(output.stdout.decode())
         logger.error(output.stderr.decode())
