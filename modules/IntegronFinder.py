@@ -99,7 +99,7 @@ def classify_integronfinder(input_bed, bedifinder):
     )
     if output.returncode != 0:
         logger.error(
-            "Error in classifying Integron Finder's results! bedops -e"
+            "Error in classifying Integron Finder's results! bedmap"
         )
         logger.error(output.stdout.decode())
         logger.error(output.stderr.decode())
