@@ -1,2 +1,2 @@
-# mamo
-id maybe mobile genomic regions
+# call me mobile
+here's my heuristic, call (genetic elements) mobile
