@@ -5,15 +5,13 @@ import sys
 
 
 def run_mobileelementfinder(input_fasta, output_path, threads):
-    mefinder_output = os.path.join(
-        "/".join([output_path, "mobileElementFinder_out"])
-    )
+    mefinder_output = os.path.join(output_path, "mobileElementFinder_out")
     if not os.path.exists(mefinder_output):
         os.makedirs(mefinder_output)
         logger.info(
             f"Created {mefinder_output} for output of mobileElementFinder"
         )
-    mefinder_output = os.path.join("/".join([mefinder_output, "out"]))
+    mefinder_output = os.path.join(mefinder_output, "out")
     output = subprocess.run(
         [
             "mefinder",
@@ -88,9 +86,7 @@ def classify_mobileelementfinder(inputbed, bedmge):
     maxdist = 10000
 
     bed = os.path.dirname(bedmge)
-    output_bed = os.path.join(
-        "/".join([bed, "input-mge_out-intersect.sorted.bed"])
-    )
+    output_bed = os.path.join(bed, "input-mge_out-intersect.sorted.bed")
 
     # test if the element is nested inside anything in ME finder
     output = subprocess.run(
@@ -113,9 +109,7 @@ def classify_mobileelementfinder(inputbed, bedmge):
         with open(f"{output_bed}.unsorted", "w") as f:
             f.write(str(output.stdout.decode()))
 
-    output_bed = os.path.join(
-        "/".join([bed, "input-mge_out-intersect.sorted.bed"])
-    )
+    output_bed = os.path.join(bed, "input-mge_out-intersect.sorted.bed")
 
     # test if the element is w/in max distance of two ME of the same type
     output = subprocess.run(

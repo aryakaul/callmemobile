@@ -96,15 +96,17 @@ def run_classify_plasmidfinder(input_fasta, input_bed):
 
 
 def run_classify_integronfinder(input_fasta, input_bed):
-    ifinderout = integronfinderfuncs.run_integronfinder(
-        input_fasta, output_path, threads
-    )
-    with open(ifinderout) as f:
-        for line in f:
-            if "# No Integron found" in line:
-                logger.info("No integrons found")
-                return ifinderout
-    bedifinder = integronfinderfuncs.bedformat_integronfinder(ifinderout)
+    # ifinderout = integronfinderfuncs.run_integronfinder(
+        # input_fasta, output_path, threads
+    # )
+    # with open(ifinderout) as f:
+        # for line in f:
+            # if "# No Integron found" in line:
+                # logger.info("No integrons found")
+                # return ifinderout
+    # bedifinder = integronfinderfuncs.bedformat_integronfinder(ifinderout)
+    # return integronfinderfuncs.classify_integronfinder(input_bed, bedifinder)
+    bedifinder = integronfinderfuncs.run_integronfinder(input_fasta, output_path, threads)
     return integronfinderfuncs.classify_integronfinder(input_bed, bedifinder)
 
 
@@ -265,18 +267,18 @@ def run_tools(input_fasta, input_bed):
     logger.info(f"Input bed: {input_bed}")
 
     # run mobileelementfinder
-    mefinder_outbed = run_classify_mobileelementfinder(input_fasta, input_bed)
+    # mefinder_outbed = run_classify_mobileelementfinder(input_fasta, input_bed)
 
     # run integron_finder
-    integron_outbed = run_classify_integronfinder(input_fasta, input_bed)
+    # integron_outbed = run_classify_integronfinder(input_fasta, input_bed)
 
     # run plasmidfinder.py
-    pfinder_outbed = run_classify_plasmidfinder(input_fasta, input_bed)
+    # pfinder_outbed = run_classify_plasmidfinder(input_fasta, input_bed)
 
     tool_dict = {
-        "mobileelementfinder": mefinder_outbed,
-        "IntegronFinder": integron_outbed,
-        "PlasmidFinder": pfinder_outbed,
+        # "mobileelementfinder": mefinder_outbed,
+        # "IntegronFinder": integron_outbed,
+        # "PlasmidFinder": pfinder_outbed,
     }
 
     # classify mobrecon

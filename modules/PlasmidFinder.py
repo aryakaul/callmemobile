@@ -6,9 +6,7 @@ from Bio import SeqIO
 
 
 def run_plasmidfinder(input_fasta, output_path):
-    plasmidfinder_output = os.path.join(
-        "/".join([output_path, "plasmidfinder_out"])
-    )
+    plasmidfinder_output = os.path.join(output_path, "plasmidfinder_out")
     if not os.path.exists(plasmidfinder_output):
         os.makedirs(plasmidfinder_output)
         logger.info(
@@ -34,13 +32,13 @@ def run_plasmidfinder(input_fasta, output_path):
         logger.debug(output.stdout.decode())
         # logger.debug(output.stderr.decode())
         logger.success("Completed plasmidfinder")
-    return os.path.join("/".join([plasmidfinder_output, "results_tab.tsv"]))
+    return os.path.join(plasmidfinder_output, "results_tab.tsv")
 
 
 def bedformat_plasmidfinder(pfinderout, description_to_id):
     pfinder_outputbed = os.path.dirname(pfinderout)
     pfinder_outputbed = os.path.join(
-        "/".join([pfinder_outputbed, "plasmidfinder_out.sorted.bed"])
+        pfinder_outputbed, "plasmidfinder_out.sorted.bed"
     )
     output = subprocess.run(
         [
@@ -104,18 +102,16 @@ def classify_plasmidfinder(inputfasta, inputbed, bedpfinder):
 
     for contig in SeqIO.parse(inputfasta, "fasta"):
         output = subprocess.run(
-            [
-                "grep", contig.id, bedpfinder
-            ], stdout=subprocess.PIPE
-        ).stdout.decode('utf-8')
+            ["grep", contig.id, bedpfinder], stdout=subprocess.PIPE
+        ).stdout.decode("utf-8")
         if not output:
-            logger.info(f"No plasmid elements found on {contig.id}. Continuing")
+            logger.info(
+                f"No plasmid elements found on {contig.id}. Continuing"
+            )
             continue
         output = subprocess.run(
-            [
-                "grep", contig.id, inputbed
-            ], stdout=subprocess.PIPE
-        ).stdout.decode('utf-8')
+            ["grep", contig.id, inputbed], stdout=subprocess.PIPE
+        ).stdout.decode("utf-8")
         if not output:
             logger.info(f"No tested elements are on {contig.id}. Continuing")
             continue
@@ -156,16 +152,21 @@ plasmid len: {max_plasmidlen:,} bp."
             )
             output = subprocess.run(
                 [
-                    f'grep "{contig.id}" "{inputbed}" \
-| sed "s/$/\tplasmid-contig|$(grep {contig.id} {bedpfinder} | cut -f4 | tr "\\n" "-" | sed "s/-$/\\n"/)/"'
+                    # f"grep {contig.id} {bedpfinder} | cut -f4"
+                    f'grep {contig.id} {inputbed} | sed "s~$~\\tplasmid-contig|$(printf \'%q\' "$(grep {contig.id} {bedpfinder} | cut -f4)")~"'
+# | sed "s/$/\\tplasmid-contig|$(grep {contig.id} {bedpfinder} | cut -f4 | sed \'s/$/-/\')/"'
+# | sed "s/$/\tplasmid-contig|$(grep {contig.id} {bedpfinder} | cut -f4 | tr "\\n" "-" | sed \'s/-$/{chr(92)}n/\')/"'
                 ],
                 capture_output=True,
                 shell=True,
             )
+            logger.debug(output)
+            # sys.exit(2)
             if output.returncode != 0:
                 logger.error(
                     f"Error in classifying PlasmidFinder's results! grep {contig.id}"
                 )
+                logger.error(output)
                 logger.error(output.stdout.decode())
                 logger.error(output.stderr.decode())
                 sys.exit(2)

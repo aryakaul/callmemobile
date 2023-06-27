@@ -129,4 +129,5 @@ dmypy.json
 .pyre/
 
 # tests
-./tests/*-test
+!/tests/*.fa
+!/tests/input.bed

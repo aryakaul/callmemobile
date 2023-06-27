@@ -6,7 +6,7 @@ from Bio import SeqIO
 
 
 def run_mobrecon(ifasta):
-    mobrecon_output = os.path.join("/".join([output_path, "mobrecon_out"]))
+    mobrecon_output = os.path.join(output_path, "mobrecon_out")
     if not os.path.exists(mobrecon_output):
         os.makedirs(mobrecon_output)
         logger.info(f"Created {mobrecon_output} for output of mob_recon")
@@ -25,6 +25,7 @@ def run_mobrecon(ifasta):
     )
     if output.returncode != 0:
         logger.error("Error in mob_recon!")
+        logger.error(output)
         logger.error(output.stdout.decode())
         logger.error(output.stderr.decode())
         sys.exit(2)
@@ -39,25 +40,26 @@ def classify_mobrecon(input_fasta, input_bed, mobrecondir, outputdir):
         os.mkdir(os.path.join(outputdir, "mobrecon_out"))
     contigreport = os.path.join(mobrecondir, "contig_report.txt")
     mobtyper = os.path.join(mobrecondir, "mobtyper_results.txt")
+    output_bed = os.path.join(
+        outputdir,
+        "mobrecon_out",
+        "input-mobrecon_out-intersect.sorted.bed",
+    )
+    with open(f"{output_bed}", "w") as f:
+        pass
     if not os.path.exists(mobtyper):
         logger.info(
             "No plasmids identified by mob_recon from the provided assembly sequence"
         )
-        return ""
+        return output_bed
     else:
-        output_bed = os.path.join(
-            outputdir,
-            "mobrecon_out",
-            "input-mobrecon_out-intersect.sorted.bed",
-        )
-        with open(f"{output_bed}", "w") as f:
-            pass
         for contig in SeqIO.parse(input_fasta, "fasta"):
+            print(contig.description)
             plasmidid = (
                 subprocess.run(
                     [
-                        f"grep \"{contig.description}\" {contigreport} \
-                    | grep 'plasmid' \
+                    f"grep \"{contig.description}\" {contigreport} \
+                    | awk -F'\\t' '$2 == \"plasmid\" {{print}}'\
                     | cut -f3"
                     ],
                     capture_output=True,
@@ -66,6 +68,7 @@ def classify_mobrecon(input_fasta, input_bed, mobrecondir, outputdir):
                 .stdout.decode()
                 .strip()
             )
+            print(plasmidid)
             if plasmidid:
                 output = subprocess.run(
                     [
@@ -75,11 +78,12 @@ def classify_mobrecon(input_fasta, input_bed, mobrecondir, outputdir):
                     capture_output=True,
                     shell=True,
                 )
-                print(output)
+                # print(output)
                 if output.returncode != 0:
                     logger.error(
                         f"Error in classifying mobrecon's results! grep {contig.id} & {plasmidid}"
                     )
+                    logger.error(output)
                     logger.error(output.stdout.decode())
                     logger.error(output.stderr.decode())
                     sys.exit(2)
