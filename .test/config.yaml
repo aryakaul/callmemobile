@@ -11,10 +11,15 @@ conda_dir:            .conda
 # (2) Parameters for Snakemake execution
 use_conda:            True # build conda environments automatically by Snakemake
 
-# (3) Path to bakta database
+# (3) Path to databases
 bakta_db:             /n/data1/hms/dbmi/baym/databases/bakta_dbv5/db 
-pvog_db:             /n/data1/hms/dbmi/baym/databases/pvog_db
+pvog_db:              /n/data1/hms/dbmi/baym/databases/pvog_db
 
 ##############
 # PARAMETERS #
 ##############
+
+prophage_dist:        5000
+integron_pctolap:     0.8
+mobileelement_dist:   10000
+

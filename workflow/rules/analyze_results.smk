@@ -53,7 +53,7 @@ rule integronfinder_bed:
         ifinderout=f"{intermediate_dir}/{{batch}}/IntegronFinder/raw/sequence_{{seqnum}}/Results_Integron_Finder_{{sample}}/{{sample}}.summary",
     params:
         script=Path(workflow.basedir) / "scripts/integronfinder_analysis.py",
-        overlap=0.9,
+        overlap=config['integron_pctolap']
     conda:
         "../envs/callmemobile.yml"
     shell:
@@ -73,6 +73,7 @@ rule mobileelementfinder_bed:
         fa=lambda wildcards: get_sample_path(wildcards.batch, wildcards.seqnum),
         bed=lambda wildcards: fn_cleanbed(wildcards.batch, wildcards.seqnum),
         mefinderout=f"{intermediate_dir}/{{batch}}/mobileelementfinder/raw/sequence_{{seqnum}}/{{sample}}/mge_results.csv",
+        maxdist=config['mobileelement_maxdist']
     params:
         script=Path(workflow.basedir) / "scripts/mobileelementfinder_analysis.py",
     conda:
