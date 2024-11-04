@@ -1,0 +1,20 @@
+########################
+# SNAKEMAKE PARAMETERS #
+########################
+
+# (1) Directories for individual stages of the workflow
+input_dir:            input
+intermediate_dir:     intermediate
+output_dir:           output
+conda_dir:            .conda
+
+# (2) Parameters for Snakemake execution
+use_conda:            True # build conda environments automatically by Snakemake
+
+# (3) Path to databases
+bakta_db:             /n/data1/hms/dbmi/baym/databases/bakta_dbv5/db 
+pvog_db:             /n/data1/hms/dbmi/baym/databases/pvog_db
+
+##############
+# PARAMETERS #
+##############

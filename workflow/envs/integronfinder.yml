@@ -1,0 +1,14 @@
+channels:
+  - bioconda
+  - conda-forge
+  - defaults
+dependencies:
+  - python==3.10
+  - loguru
+  - pip
+  - prodigal
+  - infernal
+  - hmmer
+  - pip:
+      - biopython
+      - integron_finder

@@ -1,0 +1,25 @@
+#date: 2024-11-02_00:44
+#sample: assembly
+#mge_finder version: 1.1.2
+#mgedb version: 1.1.1
+#blastn version: 2.5.0+
+mge_no,name,synonyms,prediction,type,allele_len,depth,e_value,identity,coverage,gaps,substitution,contig,start,end,cigar
+1,ISEc15,,predicted,insertion sequence,1230,,0,0.81,0.992,10,225,"UGJM01000002.1 Klebsiella aerogenes strain NCTC10004 genome assembly, contig: ERS659571SCcontig000002",2970913,2972142,M369 D3 M2 I1 M8 D1 M4 I1 M1 I2 M264 D1 M6 I1 M571
+2,ISKpn54,,predicted,insertion sequence,1165,,0,0.894,0.957,11,113,"UGJM01000002.1 Klebsiella aerogenes strain NCTC10004 genome assembly, contig: ERS659571SCcontig000002",2422950,2424114,M152 I1 M171 I1 M4 D1 M446 I1 M294 I1 M1 I1 M32 I1 M2 I1 M2 D2 M52 I1 M6
+3,ISEcl10,,predicted,insertion sequence,1199,,0.0,0.764,0.975,21,264,"UGJM01000002.1 Klebsiella aerogenes strain NCTC10004 genome assembly, contig: ERS659571SCcontig000002",1212318,1213516,M174 D1 M199 D1 M2 I1 M5 I2 M4 D1 M3 D1 M29 D2 M7 I1 M2 I1 M34 D1 M2 I1 M96 D1 M6 I1 M5 I1 M1 I1 M6 D1 M1 D1 M576 I1 M5 D1 M31
+4,MITEEc1,,predicted,mite,122,,0.0,0.855,0.976,3,15,"UGJM01000002.1 Klebsiella aerogenes strain NCTC10004 genome assembly, contig: ERS659571SCcontig000002",37188,37309,M77 I1 M12 I1 M4 D1 M28
+5,MITEYpe1,,predicted,mite,123,,0.0,0.847,0.984,2,17,"UGJM01000002.1 Klebsiella aerogenes strain NCTC10004 genome assembly, contig: ERS659571SCcontig000002",200499,200621,M35 I1 M2 D1 M85
+6,MITEYpe1,,predicted,mite,117,,0.0,0.783,0.919,5,21,"UGJM01000002.1 Klebsiella aerogenes strain NCTC10004 genome assembly, contig: ERS659571SCcontig000002",4354880,4354996,M39 D1 M5 I1 M3 I1 M34 D1 M3 I1 M31
+7,MITEEc1,,predicted,mite,123,,0.0,0.835,0.935,8,13,"UGJM01000002.1 Klebsiella aerogenes strain NCTC10004 genome assembly, contig: ERS659571SCcontig000002",3059502,3059624,M25 D2 M8 I1 M3 I1 M47 D1 M1 D1 M2 I2 M33
+8,ISKpn49,,predicted,insertion sequence,2306,,0,0.858,0.932,18,309,"UGJM01000003.1 Klebsiella aerogenes strain NCTC10004 genome assembly, contig: ERS659571SCcontig000003",124259,126564,M232 D1 M1392 I1 M449 D1 M3 D2 M29 D1 M1 D3 M2 D8 M178 D1 M3
+9,ISKpn1,,predicted,insertion sequence,1306,,0,0.999,0.904,0,1,"UGJM01000003.1 Klebsiella aerogenes strain NCTC10004 genome assembly, contig: ERS659571SCcontig000003",128224,129529,M1306
+10,ISCfr4,,predicted,insertion sequence,1228,,0,0.96,0.98,11,38,"UGJM01000003.1 Klebsiella aerogenes strain NCTC10004 genome assembly, contig: ERS659571SCcontig000003",119364,120591,M1132 I11 M96
+11,IS903,IS602;IS903R;IS903L,predicted,insertion sequence,1057,,0,0.961,1.0,0,41,"UGJM01000003.1 Klebsiella aerogenes strain NCTC10004 genome assembly, contig: ERS659571SCcontig000003",139536,140592,M1057
+12,IS26,IS46;IS26R;IS160;IS140;IS26L;IS6,predicted,insertion sequence,820,,0,0.999,1.0,0,1,"UGJM01000003.1 Klebsiella aerogenes strain NCTC10004 genome assembly, contig: ERS659571SCcontig000003",46159,46978,M820
+13,IS26,IS46;IS26R;IS160;IS140;IS26L;IS6,predicted,insertion sequence,820,,0,0.999,1.0,0,1,"UGJM01000003.1 Klebsiella aerogenes strain NCTC10004 genome assembly, contig: ERS659571SCcontig000003",40159,40978,M820
+14,ISKpn14,,predicted,insertion sequence,768,,0,0.992,1.0,0,6,"UGJM01000003.1 Klebsiella aerogenes strain NCTC10004 genome assembly, contig: ERS659571SCcontig000003",76855,77622,M768
+15,ISKpn14,,predicted,insertion sequence,768,,0,0.995,1.0,0,4,"UGJM01000003.1 Klebsiella aerogenes strain NCTC10004 genome assembly, contig: ERS659571SCcontig000003",61935,62702,M768
+9_8,cn_8606_ISKpn49,,putative,composite transposon,8606,,0,0.858,0.932,18,309,"UGJM01000003.1 Klebsiella aerogenes strain NCTC10004 genome assembly, contig: ERS659571SCcontig000003",124258,132864,
+14_12_13,cn_6820_IS26,,putative,composite transposon,6820,,0,0.999,1.0,0,1,"UGJM01000003.1 Klebsiella aerogenes strain NCTC10004 genome assembly, contig: ERS659571SCcontig000003",40158,46978,
+16_15,cn_10663_ISKpn14,,putative,composite transposon,10663,,0,0.995,1.0,0,4,"UGJM01000003.1 Klebsiella aerogenes strain NCTC10004 genome assembly, contig: ERS659571SCcontig000003",61934,72597,
+17_14,cn_5267_ISKpn14,,putative,composite transposon,5267,,0,0.992,1.0,0,6,"UGJM01000003.1 Klebsiella aerogenes strain NCTC10004 genome assembly, contig: ERS659571SCcontig000003",72355,77622,

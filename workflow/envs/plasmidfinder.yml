@@ -1,0 +1,10 @@
+channels:
+  - bioconda
+  - conda-forge
+  - defaults
+dependencies:
+  - plasmidfinder
+  - kma
+  - git
+  - blast
+  - cgecore
