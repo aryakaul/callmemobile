@@ -1,0 +1,9 @@
+qseqid	sseqid	qlen	slen	qstart	qend	sstart	send	length	mismatch	pident	qcovhsp	qcovs	sstrand	evalue	bitscore	biomarker
+000107__CP014778_00094|IncFIB	UGJM01000003.1 Klebsiella aerogenes strain NCTC10004 genome assembly, contig: ERS659571SCcontig000003	1011	150466	1	1011	17609	18619	1011	98	90.307	100.0	100.0	minus	0.0	1325	replicon
+000132__HG969996|IncFII	UGJM01000003.1 Klebsiella aerogenes strain NCTC10004 genome assembly, contig: ERS659571SCcontig000003	235	150466	1	235	78636	78870	235	1	99.574	100.0	100.0	minus	5.78e-121	429	replicon
+CP017721_00179|rep_cluster_2183	UGJM01000003.1 Klebsiella aerogenes strain NCTC10004 genome assembly, contig: ERS659571SCcontig000003	864	150466	37	864	78905	79732	830	145	82.048	96.0	96.0	plus	0.0	704	replicon
+NC_014312_00116|MPF_F	UGJM01000003.1 Klebsiella aerogenes strain NCTC10004 genome assembly, contig: ERS659571SCcontig000003	101	150466	1	101	51023	51325	101	0	100.0	100.0	100.0	plus	3.15e-64	207	mate-pair-formation
+NC_014312_00118|MPF_F	UGJM01000003.1 Klebsiella aerogenes strain NCTC10004 genome assembly, contig: ERS659571SCcontig000003	246	150466	1	246	51901	52638	246	3	98.78	100.0	100.0	plus	5.29e-161	491	mate-pair-formation
+NC_023332_00154|MPF_F	UGJM01000003.1 Klebsiella aerogenes strain NCTC10004 genome assembly, contig: ERS659571SCcontig000003	474	150466	1	474	52641	54062	474	0	100.0	100.0	100.0	plus	0.0	793	mate-pair-formation
+NC_019389_00068|MPF_F	UGJM01000003.1 Klebsiella aerogenes strain NCTC10004 genome assembly, contig: ERS659571SCcontig000003	194	150466	23	194	54743	55258	172	9	94.767	89.0	89.0	plus	8.23e-108	336	mate-pair-formation
+NC_021502_00131|MPF_T	UGJM01000003.1 Klebsiella aerogenes strain NCTC10004 genome assembly, contig: ERS659571SCcontig000003	879	150466	1	879	57432	60068	879	25	97.156	100.0	100.0	plus	0.0	1761	mate-pair-formation

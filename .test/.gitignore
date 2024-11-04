@@ -1,0 +1,5 @@
+.snakemake/
+.idea
+.ipynb_checkpoints/
+*.ipynb
+figs/

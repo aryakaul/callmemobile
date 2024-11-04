@@ -1,0 +1,8 @@
+#date: 2024-11-02_00:44
+#sample: assembly
+#mge_finder version: 1.1.2
+#mgedb version: 1.1.1
+#blastn version: 2.5.0+
+mge_no,name,synonyms,prediction,type,allele_len,depth,e_value,identity,coverage,gaps,substitution,contig,start,end,cigar
+1,ISPa86,,predicted,insertion sequence,1221,,0,0.919,1.0,0,99,"ENA|LR134290|LR134290.1 Pseudomonas mendocina strain NCTC10897 genome assembly, chromosome: 1",3410276,3411496,M1221
+2,ISPa86,,predicted,insertion sequence,1221,,0,0.919,1.0,0,99,"ENA|LR134290|LR134290.1 Pseudomonas mendocina strain NCTC10897 genome assembly, chromosome: 1",2350948,2352168,M1221

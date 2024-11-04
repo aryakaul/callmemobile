@@ -1,0 +1,5 @@
+# integron_finder 2.0.5 a41fde8
+# cmd: integron_finder --local-max --cpu 4 --outdir intermediate/test/IntegronFinder/raw/sequence_3 /n/data1/hms/dbmi/baym/arya/projects/project_microtrawler/data/1_sequences/NCTC/ena/NCTC4136/GCA_900458065/assembly.fa
+ID_replicon	CALIN	complete	In0	topology	size
+UHBO01000001.1	0	0	0	lin	27441
+UHBO01000002.1	0	0	0	lin	2762841

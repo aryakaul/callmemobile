@@ -1,0 +1,9 @@
+qseqid	sseqid	qlen	slen	qstart	qend	sstart	send	length	mismatch	pident	qcovhsp	qcovs	sstrand	evalue	bitscore	biomarker
+AJ639924|MOBV	UHBO01000001.1 Staphylococcus aureus strain NCTC4136 genome assembly, contig: ERS825154SCcontig000001	164	27441	1	164	4899	5062	164	0	100.0	100.0	100.0	minus	1.26e-83	303	oriT
+JN106164|MOBV	UHBO01000001.1 Staphylococcus aureus strain NCTC4136 genome assembly, contig: ERS825154SCcontig000001	149	27441	1	104	8649	8752	105	14	84.762	70.0	99.0	plus	1.2299999999999998e-23	104	oriT
+000262__NC_007169_00002|rep_cluster_1017	UHBO01000001.1 Staphylococcus aureus strain NCTC4136 genome assembly, contig: ERS825154SCcontig000001	1005	27441	239	986	5143	5881	748	94	86.23	74.0	86.0	minus	0.0	802	replicon
+HF937104|rep_cluster_1215	UHBO01000001.1 Staphylococcus aureus strain NCTC4136 genome assembly, contig: ERS825154SCcontig000001	945	27441	1	945	7159	8103	945	1	99.894	100.0	100.0	plus	0.0	1740	replicon
+000261__GQ900456|rep_cluster_1017	UHBO01000001.1 Staphylococcus aureus strain NCTC4136 genome assembly, contig: ERS825154SCcontig000001	189	27441	1	179	8233	8411	179	14	92.179	95.0	95.0	plus	1.51e-68	254	replicon
+BX571857|rep_cluster_2250	UHBO01000002.1 Staphylococcus aureus strain NCTC4136 genome assembly, contig: ERS825154SCcontig000002	821	2762841	1	821	113477	114297	821	2	99.756	100.0	100.0	plus	0.0	1506	replicon
+001036__CP012595|rep_cluster_1636	UHBO01000002.1 Staphylococcus aureus strain NCTC4136 genome assembly, contig: ERS825154SCcontig000002	780	2762841	1	780	2007851	2008630	780	26	96.667	100.0	100.0	minus	0.0	1297	replicon
+GQ900429_00012|MOBT	UHBO01000002.1 Staphylococcus aureus strain NCTC4136 genome assembly, contig: ERS825154SCcontig000002	363	2762841	1	363	1289164	1290252	363	2	99.449	100.0	100.0	plus	0.0	758	relaxase

@@ -1,0 +1,3 @@
+/n/data1/hms/dbmi/baym/arya/projects/project_microtrawler/data/1_sequences/NCTC/ena/NCTC10897/GCA_900636545/assembly.fa
+/n/data1/hms/dbmi/baym/arya/projects/project_microtrawler/data/1_sequences/NCTC/ena/NCTC10004/GCA_900461405/assembly.fa
+/n/data1/hms/dbmi/baym/arya/projects/project_microtrawler/data/1_sequences/NCTC/ena/NCTC4136/GCA_900458065/assembly.fa
