@@ -53,7 +53,7 @@ rule integronfinder_bed:
         ifinderout=f"{intermediate_dir}/{{batch}}/IntegronFinder/raw/sequence_{{seqnum}}/Results_Integron_Finder_{{sample}}/{{sample}}.summary",
     params:
         script=Path(workflow.basedir) / "scripts/integronfinder_analysis.py",
-        overlap=config['integron_pctolap']
+        overlap=config["integron_pctolap"],
     conda:
         "../envs/callmemobile.yml"
     shell:
@@ -73,9 +73,9 @@ rule mobileelementfinder_bed:
         fa=lambda wildcards: get_sample_path(wildcards.batch, wildcards.seqnum),
         bed=lambda wildcards: fn_cleanbed(wildcards.batch, wildcards.seqnum),
         mefinderout=f"{intermediate_dir}/{{batch}}/mobileelementfinder/raw/sequence_{{seqnum}}/{{sample}}/mge_results.csv",
-        maxdist=config['mobileelement_maxdist']
     params:
         script=Path(workflow.basedir) / "scripts/mobileelementfinder_analysis.py",
+        maxdist=config["mobileelement_maxdist"],
     conda:
         "../envs/callmemobile.yml"
     shell:
@@ -84,6 +84,7 @@ rule mobileelementfinder_bed:
                 -i {input.mefinderout} \\
                 -b {input.bed} \\
                 -f {input.fa} \\
+                -m {params.maxdist} \\
                 -o $(dirname {output})
         """
 
@@ -96,40 +97,59 @@ rule phigaro_bed:
         phigaro=f"{intermediate_dir}/{{batch}}/phigaro/raw/sequence_{{seqnum}}/{{sample}}.phigaro.tsv",
     params:
         script=Path(workflow.basedir) / "scripts/phigaro_analysis.py",
-        maxdist=10000,
+        maxdist=config["prophage_maxdist"],
     conda:
         "../envs/callmemobile.yml"
     shell:
         """
-        {params.script} \\
-                -i {input.phigaro} \\
-                -b {input.bed} \\
-                -o $(dirname {output}) \\
-                -m {params.maxdist}
+        if [ -s {input.phigaro} ]; then
+            {params.script} \\
+                    -i {input.phigaro} \\
+                    -b {input.bed} \\
+                    -o $(dirname {output}) \\
+                    -m {params.maxdist}
+        else
+            touch {output}
+        fi
         """
+
 
 rule aggregate_output:
     output:
         f"{output_dir}/{{batch}}/sequence_{{seqnum}}-{{sample}}-callmemobile.tsv",
     input:
         bed=lambda wildcards: fn_cleanbed(wildcards.batch, wildcards.seqnum),
-        phigaro=lambda wildcards: fn_phigaroprocessed(wildcards.batch, wildcards.seqnum, wildcards.sample), 
-        mobrecon=lambda wildcards: fn_mobprocessed(wildcards.batch, wildcards.seqnum, wildcards.sample), 
-        plasmidfinder=lambda wildcards: fn_plasmidfinderprocessed(wildcards.batch, wildcards.seqnum, wildcards.sample), 
-        mefinder=lambda wildcards: fn_mefinderprocessed(wildcards.batch, wildcards.seqnum, wildcards.sample), 
-        integronfinder=lambda wildcards: fn_integronfinderprocessed(wildcards.batch, wildcards.seqnum, wildcards.sample), 
+        phigaro=lambda wildcards: fn_phigaroprocessed(
+            wildcards.batch, wildcards.seqnum, wildcards.sample
+        ),
+        mobrecon=lambda wildcards: fn_mobprocessed(
+            wildcards.batch, wildcards.seqnum, wildcards.sample
+        ),
+        plasmidfinder=lambda wildcards: fn_plasmidfinderprocessed(
+            wildcards.batch, wildcards.seqnum, wildcards.sample
+        ),
+        mefinder=lambda wildcards: fn_mefinderprocessed(
+            wildcards.batch, wildcards.seqnum, wildcards.sample
+        ),
+        integronfinder=lambda wildcards: fn_integronfinderprocessed(
+            wildcards.batch, wildcards.seqnum, wildcards.sample
+        ),
     params:
         script=Path(workflow.basedir) / "scripts/callmemobile.py",
     conda:
         "../envs/callmemobile.yml"
     shell:
         """
-        {params.script} \\
-                --integronfinder {input.integronfinder} \\
-                --plasmidfinder {input.plasmidfinder} \\
-                --mob_suite {input.mobrecon} \\
-                --phigaro {input.phigaro} \\
-                --mobileelementfinder {input.mefinder} \\
-                --bed {input.bed} \\
-                -o {output} 
+        if [ -s {input.bed} ]; then
+            {params.script} \\
+                    --integronfinder {input.integronfinder} \\
+                    --plasmidfinder {input.plasmidfinder} \\
+                    --mob_suite {input.mobrecon} \\
+                    --phigaro {input.phigaro} \\
+                    --mobileelementfinder {input.mefinder} \\
+                    --bed {input.bed} \\
+                    -o {output} 
+        else
+            touch {output}
+        fi
         """

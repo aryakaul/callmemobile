@@ -100,8 +100,10 @@ def fn_mefinderprocessed(batch, seqnum, sample):
 def fn_phigaroprocessed(batch, seqnum, sample):
     return f"{dir_intermediate()}/{batch}/phigaro/processed/sequence_{seqnum}/{sample}/input-phigaro_out-intersect.sorted.bed"
 
+
 def fn_callmemobile(batch, seqnum, sample):
     return f"{dir_output()}/{batch}/sequence_{seqnum}-{sample}-callmemobile.tsv"
+
 
 def fn_integronfinder_allout():
     outputs = []

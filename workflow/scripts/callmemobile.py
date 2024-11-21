@@ -7,8 +7,7 @@ from loguru import logger
 
 def parse_arguments():
     parser = argparse.ArgumentParser(
-        description="Aggregate mobile element predictions from various tools."
-    )
+        description="Aggregate mobile element predictions from various tools.")
     parser.add_argument(
         "--integronfinder",
         help="Path to IntegronFinder output BED file",
@@ -19,12 +18,12 @@ def parse_arguments():
         help="Path to PlasmidFinder output BED file",
         required=False,
     )
-    parser.add_argument(
-        "--mob_suite", help="Path to mob-suite output BED file", required=False
-    )
-    parser.add_argument(
-        "--phigaro", help="Path to phigaro output BED file", required=False
-    )
+    parser.add_argument("--mob_suite",
+                        help="Path to mob-suite output BED file",
+                        required=False)
+    parser.add_argument("--phigaro",
+                        help="Path to phigaro output BED file",
+                        required=False)
     parser.add_argument(
         "--mobileelementfinder",
         help="Path to mobileelementfinder output BED file",
@@ -35,9 +34,10 @@ def parse_arguments():
         help="[REQUIRED] Path to input BED file of regions of interest",
         required=True,
     )
-    parser.add_argument(
-        "--output", "-o", help="[REQUIRED] Path to output file", required=True
-    )
+    parser.add_argument("--output",
+                        "-o",
+                        help="[REQUIRED] Path to output file",
+                        required=True)
     return parser.parse_args()
 
 
@@ -49,22 +49,21 @@ def read_bed_file(bed_file_path):
                 continue
             fields = line.strip().split("\t")
             if len(fields) < 3:
-                logger.error(f"Invalid BED line in {bed_file_path}: {line.strip()}")
+                logger.error(
+                    f"Invalid BED line in {bed_file_path}: {line.strip()}")
                 continue
             chrom = fields[0]
             start = int(fields[1])
             end = int(fields[2])
             name = fields[3] if len(fields) > 3 else ""
             other_fields = fields[4:] if len(fields) > 4 else []
-            regions.append(
-                {
-                    "chrom": chrom,
-                    "start": start,
-                    "end": end,
-                    "name": name,
-                    "other_fields": other_fields,
-                }
-            )
+            regions.append({
+                "chrom": chrom,
+                "start": start,
+                "end": end,
+                "name": name,
+                "other_fields": other_fields,
+            })
     return regions
 
 
@@ -72,22 +71,21 @@ def regions_overlap(region1, region2):
     if region1["chrom"] != region2["chrom"]:
         return False
     # Check if regions overlap
-    return not (region1["end"] <= region2["start"] or region2["end"] <= region1["start"])
+    return not (region1["end"] <= region2["start"]
+                or region2["end"] <= region1["start"])
 
 
 def main():
     args = parse_arguments()
 
     # Check that at least one tool output is provided
-    if not any(
-        [
+    if not any([
             args.integronfinder,
             args.plasmidfinder,
             args.mob_suite,
             args.phigaro,
             args.mobileelementfinder,
-        ]
-    ):
+    ]):
         logger.error("At least one tool output must be provided.")
         sys.exit(1)
 
@@ -118,8 +116,7 @@ def main():
             f"Reading mobileelementfinder BED file: {args.mobileelementfinder}"
         )
         tool_bed_regions["mobileelementfinder"] = read_bed_file(
-            args.mobileelementfinder
-        )
+            args.mobileelementfinder)
 
     tools = list(tool_bed_regions.keys())
 
@@ -144,7 +141,8 @@ def main():
                     # Get annotation from tool region
                     annotation = tool_region["name"]
                     if tool_region["other_fields"]:
-                        annotation += "|" + "|".join(tool_region["other_fields"])
+                        annotation += "|" + "|".join(
+                            tool_region["other_fields"])
                     if overlap_dict[key][tool_name]:
                         overlap_dict[key][tool_name] += f";{annotation}"
                     else:
@@ -171,7 +169,8 @@ def main():
                 region["name"],
             ]
             for tool_name in tools:
-                value = overlap_dict[key][tool_name] if overlap_dict[key][tool_name] else "no"
+                value = overlap_dict[key][tool_name] if overlap_dict[key][
+                    tool_name] else "no"
                 values.append(value)
             out_f.write("\t".join(values) + "\n")
     logger.info(f"Aggregation complete. Output written to {args.output}")
@@ -179,5 +178,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-

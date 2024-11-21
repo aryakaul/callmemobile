@@ -4,6 +4,8 @@ channels:
   - defaults
 dependencies:
   - python=3.7
+  - csvtk
+  - seqkit
   - bioconda::prodigal
   - bioconda::hmmer
   - pip
