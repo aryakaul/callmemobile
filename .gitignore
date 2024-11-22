@@ -4,3 +4,6 @@ proc/
 .ipynb_checkpoints/
 *.ipynb
 figs/
+intermediate/
+output/
+snakemake.*
