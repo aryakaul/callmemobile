@@ -1,7 +1,0 @@
-#chrom	start	end	name	IntegronFinder	PlasmidFinder	mob_suite	phigaro	mobileelementfinder
-ENA|LR134290|LR134290.1	398475	399475	test	no	no	no	no	no
-ENA|LR134290|LR134290.1	419394	429394	test	no	no	no	no	no
-ENA|LR134290|LR134290.1	430000	440000	test	no	no	no	no	no
-ENA|LR134290|LR134290.1	3429082	3429158	test	complete|test	no	no	no	no
-ENA|LR134290|LR134290.1	1351559	1361559	test	no	no	no	no	no
-ENA|LR134290|LR134290.1	4503271	4503571	test	no	no	no	test|near-prophage	no

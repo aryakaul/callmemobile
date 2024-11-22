@@ -26,4 +26,4 @@ wildcard_constraints:
 
 rule all:
     input:
-        fn_callmemobile_allout()
+        fn_callmemobile_allout(),

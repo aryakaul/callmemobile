@@ -43,9 +43,13 @@ def classify_integronfinder(input_bed, integron_bed, output_dir, bedolap):
         f"Classifying IntegronFinder results. Need {bedolap} overlap of gene regions w/ input regions to classify."
     )
     output = subprocess.run(
+        # [
+            # f"bedmap --echo --echo-map-id-uniq --fraction-ref {bedolap} {integron_bed} {input_bed} \
+            # | grep -v '|\s*$'"
+        # ],
         [
-            f"bedmap --echo --echo-map-id-uniq --fraction-ref {bedolap} {integron_bed} {input_bed} \
-            | grep -v '|\s*$'"
+            f"bedmap --echo --echo-map-id-uniq --fraction-map {bedolap} {input_bed} {integron_bed} \
+            | grep -v '|\\s*$'"
         ],
         capture_output=True,
         shell=True,
@@ -82,7 +86,7 @@ def main():
         classified as mobile",
         type=float,
         required=False,
-        default=0.9)
+        default=0.95)
     parser.add_argument(
         "--output",
         "-o",

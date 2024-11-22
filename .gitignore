@@ -1,5 +1,9 @@
 .snakemake/
+proc/
 .idea
 .ipynb_checkpoints/
 *.ipynb
 figs/
+intermediate/
+output/
+snakemake.*
