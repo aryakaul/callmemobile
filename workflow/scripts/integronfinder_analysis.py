@@ -44,8 +44,8 @@ def classify_integronfinder(input_bed, integron_bed, output_dir, bedolap):
     )
     output = subprocess.run(
         # [
-            # f"bedmap --echo --echo-map-id-uniq --fraction-ref {bedolap} {integron_bed} {input_bed} \
-            # | grep -v '|\s*$'"
+        # f"bedmap --echo --echo-map-id-uniq --fraction-ref {bedolap} {integron_bed} {input_bed} \
+        # | grep -v '|\s*$'"
         # ],
         [
             f"bedmap --echo --echo-map-id-uniq --fraction-map {bedolap} {input_bed} {integron_bed} \

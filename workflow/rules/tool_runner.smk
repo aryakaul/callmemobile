@@ -34,7 +34,7 @@ rule phigaro:
         f"{intermediate_dir}/{{batch}}/phigaro/raw/sequence_{{seqnum}}/{{sample}}.phigaro.tsv",
     input:
         fa=lambda wildcards: get_sample_path(wildcards.batch, wildcards.seqnum),
-    threads: config['threads']
+    threads: config["threads"]
     params:
         pvogdb=config["pvog_db"],
     conda:
@@ -81,7 +81,7 @@ rule integron_finder:
         fa=lambda wildcards: get_sample_path(wildcards.batch, wildcards.seqnum),
     conda:
         "../envs/integronfinder.yml"
-    threads: config['threads']
+    threads: config["threads"]
     shell:
         """
         OUTDIR=$(dirname $(dirname {output}))
@@ -136,7 +136,7 @@ rule mobileelementfinder:
         f"{intermediate_dir}/{{batch}}/mobileelementfinder/raw/sequence_{{seqnum}}/{{sample}}/mge_results.csv",
     input:
         fa=lambda wildcards: get_sample_path(wildcards.batch, wildcards.seqnum),
-    threads: config['threads']
+    threads: config["threads"]
     conda:
         "../envs/mobileelementfinder.yml"
     shell:
