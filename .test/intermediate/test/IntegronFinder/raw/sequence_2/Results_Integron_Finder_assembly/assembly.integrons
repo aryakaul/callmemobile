@@ -1,3 +1,0 @@
-# integron_finder 2.0.5 a41fde8
-# cmd: integron_finder --local-max --cpu 4 --outdir intermediate/test/IntegronFinder/raw/sequence_2 /n/data1/hms/dbmi/baym/arya/projects/project_microtrawler/data/1_sequences/NCTC/ena/NCTC10004/GCA_900461405/assembly.fa
-# No Integron found

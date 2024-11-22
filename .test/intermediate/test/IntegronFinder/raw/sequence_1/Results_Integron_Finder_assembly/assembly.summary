@@ -1,4 +1,0 @@
-# integron_finder 2.0.5 a41fde8
-# cmd: integron_finder --local-max --cpu 4 --outdir intermediate/test/IntegronFinder/raw/sequence_1 /n/data1/hms/dbmi/baym/arya/projects/project_microtrawler/data/1_sequences/NCTC/ena/NCTC10897/GCA_900636545/assembly.fa
-ID_replicon	CALIN	complete	In0	topology	size
-ENA|LR134290|LR134290.1	1	1	0	circ	5192837
