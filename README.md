@@ -1,4 +1,5 @@
 # callmemobile – annotation of putatively mobile bacterial genomic regions
+![GitHub Release](https://img.shields.io/github/v/release/baymlab/callmemobile)
 
 
 Workflow for identification of putatively mobile genetic regions from genome
@@ -16,7 +17,6 @@ If you use this in your own work, please cite the papers whose tools the workflo
 
 As well as, the paper for which the workflow was written for: [link preprint] 
 
-[![GitHub release](https://img.shields.io/github/release/baymlab/callmemobile.svg)](https://github.com/baymlab/callmemobile/releases/)
 
 <h2>Contents</h2>
 
