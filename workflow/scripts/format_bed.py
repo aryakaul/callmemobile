@@ -38,13 +38,15 @@ def check_input(input_fasta, input_bed, output_bed):
                 if fields[0] in description_to_id:
                     # exit = True
                     # logger.error(
-                        # f"{fields[0]} found in bed file! Please use {description_to_id[fields[0]]} instead! Reformatted bedfile outputted here {output_bed}. Please rerun callmemobile with that bed file instead!"
+                    # f"{fields[0]} found in bed file! Please use {description_to_id[fields[0]]} instead! Reformatted bedfile outputted here {output_bed}. Please rerun callmemobile with that bed file instead!"
                     # )
                     # if there is a match, replace the chromosome value with the dictionary value
                     fields[0] = description_to_id[fields[0]]
 
                 if int(fields[1]) > int(fields[2]):
-                    logger.warning(f"{fields[1]} is greater than {fields[2]}. Switching these")
+                    logger.warning(
+                        f"{fields[1]} is greater than {fields[2]}. Switching these"
+                    )
                     start = fields[2]
                     end = fields[1]
                     fields[1] = start

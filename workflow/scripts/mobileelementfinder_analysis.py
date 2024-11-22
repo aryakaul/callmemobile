@@ -61,7 +61,9 @@ def classify_mobileelementfinder(inputbed, is_elements_bed, maxdist):
     bed = os.path.dirname(is_elements_bed)
     output_bed = os.path.join(bed, "input-mge_out-intersect.sorted.bed")
 
-    logger.info(f"Classifying elements for TN/IS association with max distance {maxdist} bp.")
+    logger.info(
+        f"Classifying elements for TN/IS association with max distance {maxdist} bp."
+    )
 
     # Ensure input BED files are sorted
     inputbed_sorted = f"{inputbed}.sorted"
@@ -73,15 +75,14 @@ def classify_mobileelementfinder(inputbed, is_elements_bed, maxdist):
 
     # Test if the element overlaps with an IS element using bedmap
     overlap_output = subprocess.run(
-        [
-            f"bedmap --echo --skip-unmapped {inputbed_sorted} {is_elements_bed}"
-        ],
+        [f"bedmap --echo --skip-unmapped {inputbed_sorted} {is_elements_bed}"],
         capture_output=True,
         shell=True,
         text=True,
     )
     if overlap_output.returncode != 0:
-        logger.error("Error in classifying elements overlapping IS elements! bedmap")
+        logger.error(
+            "Error in classifying elements overlapping IS elements! bedmap")
         logger.error(overlap_output.stdout)
         logger.error(overlap_output.stderr)
         sys.exit(2)
@@ -92,7 +93,9 @@ def classify_mobileelementfinder(inputbed, is_elements_bed, maxdist):
                 fields = line.strip().split('\t')
                 if len(fields) >= 4:
                     element_name = fields[3] + "|overlaps-IS"
-                    f.write('\t'.join([fields[0], fields[1], fields[2], element_name]) + '\n')
+                    f.write('\t'.join(
+                        [fields[0], fields[1], fields[2], element_name]) +
+                            '\n')
 
     # Use closest-features to find the nearest features on both sides
     cmd_closest = f"closest-features --dist --delim '\t' --no-overlaps {inputbed_sorted} {is_elements_bed}"
@@ -146,7 +149,8 @@ def classify_mobileelementfinder(inputbed, is_elements_bed, maxdist):
             right_is_type = right_fields[4]
 
             if left_is_type == right_is_type:
-                element_key = (element_chrom, element_start, element_end, element_name)
+                element_key = (element_chrom, element_start, element_end,
+                               element_name)
                 element_name_flanked = element_name + f"|flanked-IS-{left_is_type}"
                 flanked_elements[element_key] = element_name_flanked
 
@@ -162,8 +166,6 @@ def classify_mobileelementfinder(inputbed, is_elements_bed, maxdist):
     )
     logger.success("Completed classifying elements for TN/IS association")
     return output_bed
-
-
 
 
 #def classify_mobileelementfinder(inputbed, bedmge, maxdist):
