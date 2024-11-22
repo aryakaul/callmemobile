@@ -10,9 +10,9 @@ predicted to be mobile (maybe).
 
 If you use this in your own work, please cite the papers whose tools the workflow uses:
 workflow uses:
--
--
--
+*
+*
+*
 
 As well as, the paper for which the workflow was written for: [link preprint] 
 
@@ -26,16 +26,12 @@ As well as, the paper for which the workflow was written for: [link preprint]
 
 * [1. Introduction](#1-introduction)
 * [2. Dependencies](#2-dependencies)
-    * [2a. Essential dependencies](#2a-essential-dependencies)
-    * [2b. Protocol-specific dependencies](#2b-protocol-specific-dependencies)
 * [3. Installation](#3-installation)
 * [4. Usage](#4-usage)
     * [4a. Basic example](#4a-basic-example)
     * [4b. Adjusting configuration](#4b-adjusting-configuration)
-    * [4c. List of implemented protocols](#4c-list-of-implemented-protocols)
-    * [4d. List of workflow commands](#4d-list-of-workflow-commands)
-    * [4e. Running on a cluster](#4e-running-on-a-cluster)
-    * [4f. Troubleshooting](#4f-troubleshooting)
+    * [4c. List of workflow commands](#4c-list-of-workflow-commands)
+    * [4d. Troubleshooting](#4d-troubleshooting)
 * [5. Citation](#5-citation)
 * [6. Issues](#6-issues)
 * [7. Changelog](#7-changelog)
@@ -57,7 +53,6 @@ bed file to the genomic assembly, so please ensure they are matched correctly.
 
 
 ## 2. Dependencies
-
 
 * [Conda](https://docs.conda.io/en/latest/miniconda.html) (unless the use of Conda is switched off in the configuration) and ideally also [Mamba](https://mamba.readthedocs.io/) (>= 0.20.0)
 * [GNU Make](https://www.gnu.org/software/make/)
@@ -130,12 +125,13 @@ curl -L https://github.com/baymlab/callmemobile/tarball/main \
   ```
 
   These should follow the format of typical bed files:
+  ```bash
+   ➜ head NCTC10036-assembly_abr-search.abr.bed
+  ENA|LR134493|LR134493.1_388     406996  410142  adeF
+  ENA|LR134493|LR134493.1_694     718039  718224  rsmA
+  ENA|LR134493|LR134493.1_1759    1957864 1958496 CRP
   ```
- ➜ head NCTC10036-assembly_abr-search.abr.bed
-ENA|LR134493|LR134493.1_388     406996  410142  adeF
-ENA|LR134493|LR134493.1_694     718039  718224  rsmA
-ENA|LR134493|LR134493.1_1759    1957864 1958496 CRP
-  ```
+  
 The first column corresponds to the contig, the second column is the position
 start coordinate and the third column is the end coordinate. The fourth column 
 can be any string description of the region (in this case, the gene name).
