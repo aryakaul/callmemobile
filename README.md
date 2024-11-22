@@ -9,7 +9,6 @@ and a set of genetic regions to identify which subset of these regions are
 predicted to be mobile (maybe).
 
 If you use this in your own work, please cite the papers whose tools the workflow uses:
-workflow uses:
 * [Phigaro](https://doi.org/10.1093/bioinformatics/btaa250)
 * [MOB-suite](https://doi:10.1099/mgen.0.000206)
 * [plasmidfinder](https://doi:10.1128/AAC.02412-14)
