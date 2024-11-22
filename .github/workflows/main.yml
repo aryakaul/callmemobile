@@ -1,0 +1,67 @@
+name: Tests
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  Testing:
+    runs-on: ${{ matrix.os }}
+
+    continue-on-error:  true
+
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ ubuntu-latest, macos-latest ]
+        python-version: [ "3.11" ]
+        snakemake-version: [ 8 ]
+        exclude:
+           - python-version: "3.11" #package dep conflict
+             snakemake-version: 6
+        include:
+           - os: ubuntu-latest
+             python-version: "3.8"
+             snakemake-version: 8
+           ############################################################
+           - os: macos-latest
+             python-version: "3.9"
+             snakemake-version: 8
+           - os: macos-latest
+             python-version: "3.10"
+             snakemake-version: 8
+
+    steps:
+      - uses: actions/checkout@v3
+      - uses: mamba-org/setup-micromamba@v1
+        with:
+          micromamba-version: "1.5.6-0"
+          environment-name: test-env
+          condarc: |
+            channels:
+              - conda-forge
+              - bioconda
+              - defaults
+          create-args: >-
+            python=${{ matrix.python-version }}
+            snakemake-minimal=${{ matrix.snakemake-version }}
+            mamba
+            make
+          init-shell: bash
+          cache-environment: true
+          post-cleanup: all
+      - name: Versions
+        shell: bash -el {0}
+        run: |
+          micromamba activate test-env
+          python -v
+          snakemake -v
+      - name: Make test
+        shell: bash -el {0}
+        run: |
+          micromamba activate test-env
+          make test
