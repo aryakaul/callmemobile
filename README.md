@@ -1,4 +1,4 @@
-# callmemobile – Annotation of putatively mobile bacterial genomic regions
+# callmemobile – annotation of putatively mobile bacterial genomic regions
 
 
 Workflow for identification of putatively mobile genetic regions from genome
