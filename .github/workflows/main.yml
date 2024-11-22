@@ -49,4 +49,4 @@ jobs:
         shell: bash -el {0}
         run: |
           micromamba activate test-env
-          make test
+          make format
