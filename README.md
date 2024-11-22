@@ -17,8 +17,6 @@ workflow uses:
 As well as, the paper for which the workflow was written for: [link preprint] 
 
 [![GitHub release](https://img.shields.io/github/release/baymlab/callmemobile.svg)](https://github.com/baymlab/callmemobile/releases/)
-[![callmemobile test](https://github.com/baymlab/callmemobile/actions/workflows/main.yaml/badge.svg)](https://github.com/baymlab/callmemobile/actions/)
-
 
 <h2>Contents</h2>
 
