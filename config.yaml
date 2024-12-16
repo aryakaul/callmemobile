@@ -20,7 +20,7 @@ threads:                  24
 ##############
 # PARAMETERS #
 ##############
-prophage_maxdist:         5000
+prophage_maxdist:         1000
 integron_pctolap:         0.95
 mobileelement_maxdist:    10000
 plasmidfinder_mincov:     0.6
